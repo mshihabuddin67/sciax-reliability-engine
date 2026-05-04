@@ -1,12 +1,19 @@
+from sentence_transformers import SentenceTransformer, util
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
 def compute_stability_score(variants):
-    """
-    Simple similarity-based stability approximation
-    (upgradeable to embeddings later)
-    """
 
-    base = len(set(variants))
-    total = len(variants)
+    embeddings = model.encode(variants, convert_to_tensor=True)
 
-    stability = 1 - (base - 1) / total
+    base = embeddings[0]
 
-    return round(max(0.0, min(1.0, stability)), 2)
+    scores = []
+
+    for emb in embeddings:
+        sim = util.cos_sim(base, emb).item()
+        scores.append(sim)
+
+    stability = sum(scores) / len(scores)
+
+    return round(stability, 2)
