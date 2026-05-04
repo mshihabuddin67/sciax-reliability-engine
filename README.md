@@ -1,2 +1,9 @@
-# sciax-reliability-engine
-AI Reliability &amp; Stability Engine that quantifies how consistent LLM outputs are under prompt perturbations.
+# S-CIAX
+
+AI Reliability Engine that measures output stability under prompt perturbations.
+
+## Run
+
+cd backend
+pip install flask
+python app.py
