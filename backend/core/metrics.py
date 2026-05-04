@@ -1,4 +1,12 @@
-import random
+def compute_stability_score(variants):
+    """
+    Simple similarity-based stability approximation
+    (upgradeable to embeddings later)
+    """
 
-def compute_stability(variants):
-    return round(random.uniform(0.55, 0.95), 2)
+    base = len(set(variants))
+    total = len(variants)
+
+    stability = 1 - (base - 1) / total
+
+    return round(max(0.0, min(1.0, stability)), 2)
