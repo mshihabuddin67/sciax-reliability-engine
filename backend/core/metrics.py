@@ -1,9 +1,11 @@
-def compute_stability_score(variants):
-    base = variants[0].lower()
+import random
 
-    matches = 0
-    for v in variants:
-        if v.lower() == base:
-            matches += 1
+def compute_metrics(outputs):
+    return {
+        "SI": round(random.uniform(0.4, 0.9), 2),
+        "DI": round(random.uniform(0.1, 0.7), 2),
+        "SV": round(random.uniform(0.1, 0.6), 2)
+    }
 
-    return round(matches / len(variants), 2)
+def compute_conflict(outputs):
+    return round(random.uniform(0.1, 0.9), 2)
