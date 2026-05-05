@@ -1,8 +1,5 @@
-return build_response(
-    input.text,
-    metrics,
-    cs,
-    risk,
-    variants,
-    outputs
-)
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"message": "running"}
