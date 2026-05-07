@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# ----------------------------
-# CORS FIX (IMPORTANT)
-# ----------------------------
+# --------------------------------
+# CORS FIX
+# --------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,40 +15,97 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ----------------------------
+# --------------------------------
 # Request Model
-# ----------------------------
+# --------------------------------
 class InputModel(BaseModel):
     text: str
 
-# ----------------------------
-# Root check
-# ----------------------------
+# --------------------------------
+# Root Endpoint
+# --------------------------------
 @app.get("/")
 def root():
     return {"status": "running"}
 
-# ----------------------------
-# S-CIAX Analyze Endpoint
-# ----------------------------
+# --------------------------------
+# S-CIAX Smart Analyze Endpoint
+# --------------------------------
 @app.post("/analyze")
 def analyze(input: InputModel):
 
     text = input.text
+    text_lower = text.lower()
 
-    # simple demo logic (safe for Render free tier)
+    # ----------------------------
+    # Default Scores
+    # ----------------------------
+    stability_score = 0.9
+    conflict_score = 0.1
+    risk_level = "Low"
+
+    # ----------------------------
+    # High Risk Keywords
+    # ----------------------------
+    high_risk_words = [
+        "hack",
+        "attack",
+        "exploit",
+        "bypass",
+        "fraud",
+        "destroy",
+        "steal",
+        "malware"
+    ]
+
+    # ----------------------------
+    # Medium Risk Keywords
+    # ----------------------------
+    medium_risk_words = [
+        "refund",
+        "angry",
+        "problem",
+        "report",
+        "complaint",
+        "broken",
+        "error"
+    ]
+
+    # ----------------------------
+    # High Risk Detection
+    # ----------------------------
+    for word in high_risk_words:
+        if word in text_lower:
+            risk_level = "High"
+            stability_score = 0.3
+            conflict_score = 0.8
+
+    # ----------------------------
+    # Medium Risk Detection
+    # ----------------------------
+    if risk_level != "High":
+        for word in medium_risk_words:
+            if word in text_lower:
+                risk_level = "Medium"
+                stability_score = 0.6
+                conflict_score = 0.5
+
+    # ----------------------------
+    # Length Influence
+    # ----------------------------
     length = len(text)
 
-    stability_score = max(0.1, min(1.0, 1 - (length / 200)))
-    conflict_score = min(1.0, length / 150)
+    if length > 120:
+        stability_score -= 0.1
+        conflict_score += 0.1
 
-    if stability_score < 0.4:
-        risk_level = "High"
-    elif stability_score < 0.7:
-        risk_level = "Medium"
-    else:
-        risk_level = "Low"
+    # Clamp values
+    stability_score = max(0.1, min(1.0, stability_score))
+    conflict_score = max(0.0, min(1.0, conflict_score))
 
+    # ----------------------------
+    # Final Response
+    # ----------------------------
     return {
         "input": text,
         "risk_level": risk_level,
