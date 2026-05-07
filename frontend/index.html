@@ -1,134 +1,19 @@
-<!DOCTYPE html><html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>S-CIAX Reliability Demo</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1220;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }.card {
-  width: 420px;
-  background: #111a2e;
-  padding: 20px;
-  border-radius: 14px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.5);
-}
-
-h2 { margin-bottom: 10px; }
-
-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  margin-top: 10px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: white;
-  cursor: pointer;
-}
-
-button:hover { background: #2563eb; }
-
-.bar {
-  height: 10px;
-  background: #1f2937;
-  border-radius: 10px;
-  margin-top: 15px;
-  overflow: hidden;
-}
-
-.fill {
-  height: 100%;
-  width: 0%;
-  background: green;
-  transition: 0.5s;
-}
-
-.result {
-  margin-top: 15px;
-  padding: 10px;
-  background: #0b1220;
-  border-radius: 10px;
-  font-size: 13px;
-  white-space: pre-wrap;
-  min-height: 60px;
-}
-
-.label {
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-  </style>
-</head>
-<body><div class="card">
-  <h2>🧠 S-CIAX Demo</h2>
-  <p>AI Reliability & Stability Analyzer</p>  <input id="textInput" placeholder="Enter prompt..." />
-  <button onclick="analyze()">Analyze</button>  <div class="label">Stability Score</div>
-  <div class="bar"><div class="fill" id="bar"></div></div>  <div class="result" id="output">Result will appear here...</div>
-</div><script>
 async function analyze() {
-  const inputText = document.getElementById('textInput').value;
-  const output = document.getElementById('output');
-  const bar = document.getElementById('bar');
+  const inputText = document.getElementById("textInput").value;
 
-  if (!inputText) {
-    output.innerText = "Please enter text";
-    return;
-  }
+  const res = await fetch("https://sciax-reliability-engine.onrender.com/analyze", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      text: inputText
+    })
+  });
 
-  output.innerText = "Analyzing...";
+  const data = await res.json();
+  console.log(data);
 
-  try {
-    const res = await fetch('https://sciax-reliability-engine.onrender.com/analyze', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        text: inputText
-      })
-    });
-
-    const data = await res.json();
-
-    console.log("API Response:", data);
-
-    output.innerText = JSON.stringify(data, null, 2);
-
-    let score = data.stability_score;
-
-    if (score === undefined || score === null) {
-      score = Math.random();
-    }
-
-    const percent = Math.round(score * 100);
-
-    bar.style.width = percent + "%";
-
-    if (percent < 40) bar.style.background = "red";
-    else if (percent < 70) bar.style.background = "orange";
-    else bar.style.background = "green";
-
-  } catch (error) {
-    console.error(error);
-    output.innerText = "Error connecting to API";
-  }
+  document.getElementById("output").innerText =
+    JSON.stringify(data, null, 2);
 }
-</script></body>
-</html>
