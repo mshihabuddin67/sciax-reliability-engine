@@ -1,13 +1,25 @@
-from flask import Blueprint, request, jsonify
-from core.engine import sciax_engine
+@app.post("/analyze")
+def analyze(input: InputModel):
 
-analyze_route = Blueprint("analyze", __name__)
+    # Generate variants
+    variants = perturb(input.text)
 
-@analyze_route.route("/analyze", methods=["POST"])
-def analyze():
-    data = request.json
-    prompt = data.get("prompt", "")
+    # Demo outputs
+    outputs = [v + " response" for v in variants]
 
-    result = sciax_engine(prompt)
+    # Metrics
+    metrics = compute_metrics(outputs)
 
-    return jsonify(result)
+    # Conflict score
+    cs = compute_conflict(outputs)
+
+    # Risk analysis
+    risk = risk_analyzer(metrics, cs)
+
+    # Final response
+    return build_response(
+        input.text,
+        metrics,
+        cs,
+        risk
+    )
