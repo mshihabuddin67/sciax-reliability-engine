@@ -1,1 +1,9 @@
-fetch("https://sciax-reliability-engine.onrender.com/analyze")
+fetch("https://sciax-reliability-engine.onrender.com", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    text: inputText
+  })
+})
