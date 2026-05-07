@@ -83,11 +83,11 @@ button:hover { background: #2563eb; }
   <div class="bar"><div class="fill" id="bar"></div></div>  <div class="result" id="output">Result will appear here...</div>
 </div><script>
 async function analyze() {
-  const text = document.getElementById('textInput').value;
+  const inputText = document.getElementById('textInput').value;
   const output = document.getElementById('output');
   const bar = document.getElementById('bar');
 
-  if (!text) {
+  if (!inputText) {
     output.innerText = "Please enter text";
     return;
   }
@@ -97,24 +97,27 @@ async function analyze() {
   try {
     const res = await fetch('https://sciax-reliability-engine.onrender.com/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: inputText
+      })
     });
 
     const data = await res.json();
 
     console.log("API Response:", data);
 
-    // show full response
     output.innerText = JSON.stringify(data, null, 2);
 
-    // stability handling (fallback safe)
     let score = data.stability_score;
+
     if (score === undefined || score === null) {
       score = Math.random();
     }
 
-    let percent = Math.round(score * 100);
+    const percent = Math.round(score * 100);
 
     bar.style.width = percent + "%";
 
@@ -122,8 +125,8 @@ async function analyze() {
     else if (percent < 70) bar.style.background = "orange";
     else bar.style.background = "green";
 
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     output.innerText = "Error connecting to API";
   }
 }
