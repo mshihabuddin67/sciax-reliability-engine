@@ -1,10 +1,20 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app.perturb import perturb
-from app.metrics import compute_metrics, compute_conflict
-from app.risk import risk_analyzer
-from app.response import build_response
-
 app = FastAPI()
+
+# Input schema
+class InputModel(BaseModel):
+    text: str
+
+# Root route
+@app.get("/")
+def home():
+    return {"status": "running"}
+
+# Analyze route
+@app.post("/analyze")
+def analyze(input: InputModel):
+    return {
+        "received": input.text
+    }
