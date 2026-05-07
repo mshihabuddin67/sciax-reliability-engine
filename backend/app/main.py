@@ -43,6 +43,7 @@ def analyze(input: InputModel):
     stability_score = 0.9
     conflict_score = 0.1
     risk_level = "Low"
+    reason = "Normal stable interaction detected"
 
     # ----------------------------
     # High Risk Keywords
@@ -79,6 +80,7 @@ def analyze(input: InputModel):
             risk_level = "High"
             stability_score = 0.3
             conflict_score = 0.8
+            reason = "Detected exploit or attack-related terminology"
 
     # ----------------------------
     # Medium Risk Detection
@@ -89,6 +91,7 @@ def analyze(input: InputModel):
                 risk_level = "Medium"
                 stability_score = 0.6
                 conflict_score = 0.5
+                reason = "Detected complaint or unstable interaction pattern"
 
     # ----------------------------
     # Length Influence
@@ -99,7 +102,9 @@ def analyze(input: InputModel):
         stability_score -= 0.1
         conflict_score += 0.1
 
+    # ----------------------------
     # Clamp values
+    # ----------------------------
     stability_score = max(0.1, min(1.0, stability_score))
     conflict_score = max(0.0, min(1.0, conflict_score))
 
@@ -110,5 +115,6 @@ def analyze(input: InputModel):
         "input": text,
         "risk_level": risk_level,
         "stability_score": round(stability_score, 2),
-        "conflict_score": round(conflict_score, 2)
+        "conflict_score": round(conflict_score, 2),
+        "reason": reason
     }
