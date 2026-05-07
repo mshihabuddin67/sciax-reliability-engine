@@ -1,5 +1,9 @@
 async function analyze() {
   const inputText = document.getElementById("textInput").value;
+  const output = document.getElementById("output");
+  const bar = document.getElementById("bar");
+
+  output.innerText = "Analyzing...";
 
   const res = await fetch("https://sciax-reliability-engine.onrender.com/analyze", {
     method: "POST",
@@ -14,6 +18,18 @@ async function analyze() {
   const data = await res.json();
   console.log(data);
 
-  document.getElementById("output").innerText =
-    JSON.stringify(data, null, 2);
+  // show full response
+  output.innerText = `
+Risk: ${data.risk_level}
+Stability: ${data.stability_score}
+Conflict: ${data.conflict_score}
+  `;
+
+  // bar control
+  let percent = Math.round((data.stability_score || 0) * 100);
+  bar.style.width = percent + "%";
+
+  if (percent < 40) bar.style.background = "red";
+  else if (percent < 70) bar.style.background = "orange";
+  else bar.style.background = "green";
 }
