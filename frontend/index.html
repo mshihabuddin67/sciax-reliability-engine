@@ -1,35 +1,105 @@
-async function analyze() {
-  const inputText = document.getElementById("textInput").value;
-  const output = document.getElementById("output");
-  const bar = document.getElementById("bar");
-
-  output.innerText = "Analyzing...";
-
-  const res = await fetch("https://sciax-reliability-engine.onrender.com/analyze", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      text: inputText
-    })
-  });
-
-  const data = await res.json();
-  console.log(data);
-
-  // show full response
-  output.innerText = `
-Risk: ${data.risk_level}
-Stability: ${data.stability_score}
-Conflict: ${data.conflict_score}
-  `;
-
-  // bar control
-  let percent = Math.round((data.stability_score || 0) * 100);
-  bar.style.width = percent + "%";
-
-  if (percent < 40) bar.style.background = "red";
-  else if (percent < 70) bar.style.background = "orange";
-  else bar.style.background = "green";
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>S-CIAX Mobile Debug</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }.card {
+  width: 100%;
+  max-width: 420px;
+  background: #111a2e;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
+
+h2 {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.small {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 5px;
+}
+
+  </style>
+</head>
+<body><div class="card">
+  <h2>🧠 S-CIAX Mobile Debug</h2>
+  <div class="small">1-click API test + popup result</div>  <input id="textInput" placeholder="Type test input..." value="I want a refund" /><button onclick="analyze()">🚀 Run Test</button> <button onclick="quickTest()">⚡ Quick Default Test</button>
+
+</div><script>
+async function analyze(customText = null) {
+  const inputText = customText || document.getElementById("textInput").value;
+
+  try {
+    const res = await fetch("https://sciax-reliability-engine.onrender.com/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text: inputText })
+    });
+
+    const data = await res.json();
+
+    console.log("API Response:", data);
+
+    // popup result (mobile friendly)
+    alert(
+      "RESULT:\n" +
+      "Risk: " + (data.risk_level || "N/A") + "\n" +
+      "Stability: " + (data.stability_score || "N/A") + "\n" +
+      "Conflict: " + (data.conflict_score || "N/A")
+    );
+
+  } catch (err) {
+    console.error(err);
+    alert("API Error: Check connection");
+  }
+}
+
+// 1-click test
+function quickTest() {
+  analyze("I want a refund");
+}
+</script></body>
+</html>
