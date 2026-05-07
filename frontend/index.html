@@ -20,9 +20,7 @@
   box-shadow: 0 0 25px rgba(0,0,0,0.5);
 }
 
-h2 {
-  margin-bottom: 10px;
-}
+h2 { margin-bottom: 10px; }
 
 input {
   width: 100%;
@@ -44,9 +42,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background: #2563eb;
-}
+button:hover { background: #2563eb; }
 
 .bar {
   height: 10px;
@@ -70,6 +66,7 @@ button:hover {
   border-radius: 10px;
   font-size: 13px;
   white-space: pre-wrap;
+  min-height: 60px;
 }
 
 .label {
@@ -80,7 +77,7 @@ button:hover {
   </style>
 </head>
 <body><div class="card">
-   S-CIAX Demo</h2>
+  <h2>🧠 S-CIAX Demo</h2>
   <p>AI Reliability & Stability Analyzer</p>  <input id="textInput" placeholder="Enter prompt..." />
   <button onclick="analyze()">Analyze</button>  <div class="label">Stability Score</div>
   <div class="bar"><div class="fill" id="bar"></div></div>  <div class="result" id="output">Result will appear here...</div>
@@ -90,27 +87,45 @@ async function analyze() {
   const output = document.getElementById('output');
   const bar = document.getElementById('bar');
 
+  if (!text) {
+    output.innerText = "Please enter text";
+    return;
+  }
+
   output.innerText = "Analyzing...";
 
-  const res = await fetch('https://sciax-reliability-engine.onrender.com/analyze', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
-  });
+  try {
+    const res = await fetch('https://sciax-reliability-engine.onrender.com/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  output.innerText = JSON.stringify(data, null, 2);
+    console.log("API Response:", data);
 
-  // fake stability handling (adjust if backend sends real value)
-  let score = data.stability_score || Math.random();
-  let percent = Math.round(score * 100);
+    // show full response
+    output.innerText = JSON.stringify(data, null, 2);
 
-  bar.style.width = percent + "%";
+    // stability handling (fallback safe)
+    let score = data.stability_score;
+    if (score === undefined || score === null) {
+      score = Math.random();
+    }
 
-  if (percent < 40) bar.style.background = "red";
-  else if (percent < 70) bar.style.background = "orange";
-  else bar.style.background = "green";
+    let percent = Math.round(score * 100);
+
+    bar.style.width = percent + "%";
+
+    if (percent < 40) bar.style.background = "red";
+    else if (percent < 70) bar.style.background = "orange";
+    else bar.style.background = "green";
+
+  } catch (err) {
+    console.error(err);
+    output.innerText = "Error connecting to API";
+  }
 }
 </script></body>
 </html>
