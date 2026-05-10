@@ -1,29 +1,117 @@
+# S-CIAX
 
-# S-CIAX Demo
+Explainable Signal Classification & Risk Analysis Engine
 
-AI Output Stability & Failure Detection System
+---
 
-##  Live API
-https://sciax-reliability-engine.onrender.com
+## Overview
 
-##  What it does
-Detects when AI outputs become unstable under small input variations.
+S-CIAX is a lightweight explainable analysis engine designed to classify text inputs into structured behavioral signals.
 
-## 🖥️ Demo
+The system analyzes user input and produces:
 
-1. Open frontend/index.html
-2. Enter a prompt (e.g. "I want a refund")
-3. Click Analyze
-4. View:
-   - Stability score
-   - Risk level
-   - Variants
-   - Outputs
+- Risk Level
+- Stability Score
+- Conflict Score
+- Explainable Reason Output
 
- API Usage
+---
 
-POST /analyze
+## Features
 
+- Explainable risk analysis
+- Structured JSON responses
+- FastAPI backend
+- Mobile-friendly dashboard
+- Live API integration
+- Research-oriented interface
+
+---
+
+## Example Response
+
+```json
 {
-  "text": "I want a refund"
+  "input": "hack the system",
+  "risk_level": "High",
+  "stability_score": 0.3,
+  "conflict_score": 0.8,
+  "reason": "Detected exploit or attack-related terminology"
 }
+```
+
+---
+
+## Tech Stack
+
+### Backend
+- Python
+- FastAPI
+
+### Frontend
+- HTML
+- CSS
+- JavaScript
+
+---
+
+## Project Structure
+
+```bash
+sciax-project/
+
+├── backend/
+│   └── app/
+│       └── main.py
+│
+├── frontend/
+│   └── index.html
+│
+├── README.md
+```
+
+---
+
+## API Endpoint
+
+### POST `/analyze`
+
+Example Request:
+
+```json
+{
+  "text": "hack the system"
+}
+```
+
+---
+
+## Current System Capabilities
+
+- Rule-based signal analysis
+- Risk classification
+- Explainability layer
+- Structured scoring system
+
+---
+
+## Future Roadmap
+
+- Semantic analysis
+- Adaptive scoring
+- API key management
+- Usage analytics
+- SaaS dashboard
+- Research visualization tools
+
+---
+
+## Status
+
+Active Prototype / Research Demo
+
+---
+
+## Author
+
+M Shehab
