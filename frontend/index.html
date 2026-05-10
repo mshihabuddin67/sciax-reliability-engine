@@ -1,105 +1,189 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>S-CIAX Mobile Debug</title>
+
+  <title>S-CIAX Dashboard</title>
+
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1220;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 15px;
-    }.card {
-  width: 100%;
-  max-width: 420px;
-  background: #111a2e;
-  padding: 20px;
-  border-radius: 14px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-}
 
-h2 {
-  margin: 0 0 10px 0;
-  font-size: 20px;
-}
+    body{
+      margin:0;
+      padding:20px;
+      background:#0f172a;
+      font-family:Arial;
+      color:white;
+    }
 
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  margin-top: 10px;
-  font-size: 16px;
-}
+    h1{
+      color:#38bdf8;
+    }
 
-button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
+    .card{
+      background:#1e293b;
+      padding:20px;
+      border-radius:20px;
+      margin-bottom:20px;
+    }
 
-button:active {
-  transform: scale(0.98);
-}
+    textarea{
+      width:100%;
+      height:120px;
+      border:none;
+      border-radius:12px;
+      padding:15px;
+      background:#334155;
+      color:white;
+      font-size:16px;
+      box-sizing:border-box;
+    }
 
-.small {
-  font-size: 12px;
-  opacity: 0.7;
-  margin-top: 5px;
-}
+    button{
+      width:100%;
+      padding:15px;
+      margin-top:15px;
+      border:none;
+      border-radius:12px;
+      background:#38bdf8;
+      color:black;
+      font-size:16px;
+      font-weight:bold;
+    }
+
+    .result{
+      margin-top:20px;
+      padding:15px;
+      border-radius:15px;
+      background:#020617;
+      display:none;
+    }
+
+    .high{
+      color:#ef4444;
+    }
+
+    .medium{
+      color:#facc15;
+    }
+
+    .low{
+      color:#22c55e;
+    }
 
   </style>
+
 </head>
-<body><div class="card">
-  <h2>🧠 S-CIAX Mobile Debug</h2>
-  <div class="small">1-click API test + popup result</div>  <input id="textInput" placeholder="Type test input..." value="I want a refund" /><button onclick="analyze()">🚀 Run Test</button> <button onclick="quickTest()">⚡ Quick Default Test</button>
 
-</div><script>
-async function analyze(customText = null) {
-  const inputText = customText || document.getElementById("textInput").value;
+<body>
 
-  try {
-    const res = await fetch("https://sciax-reliability-engine.onrender.com/analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ text: inputText })
-    });
+  <h1>S-CIAX Research Dashboard</h1>
+
+  <div class="card">
+
+    <h2>Live Signal Analysis</h2>
+
+    <textarea id="textInput" placeholder="Enter text..."></textarea>
+
+    <button onclick="analyze()">
+      Analyze
+    </button>
+
+    <div class="result" id="resultBox">
+
+      <h3 id="riskText"></h3>
+
+      <p>
+        Stability:
+        <span id="stability"></span>
+      </p>
+
+      <p>
+        Conflict:
+        <span id="conflict"></span>
+      </p>
+
+      <p>
+        Reason:
+        <span id="reason"></span>
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h2>System Status</h2>
+
+    <p>API Engine: ONLINE</p>
+
+    <p>Explainability: ENABLED</p>
+
+    <p>Deployment: ACTIVE</p>
+
+  </div>
+
+<script>
+
+async function analyze(){
+
+  const text = document.getElementById("textInput").value;
+
+  const resultBox = document.getElementById("resultBox");
+
+  try{
+
+    const res = await fetch(
+      "https://sciax-reliability-engine.onrender.com/analyze",
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key":"sciax-demo-key-123"
+        },
+
+        body:JSON.stringify({
+          text:text
+        })
+
+      }
+    );
 
     const data = await res.json();
 
-    console.log("API Response:", data);
+    resultBox.style.display = "block";
 
-    // popup result (mobile friendly)
-    alert(
-      "RESULT:\n" +
-      "Risk: " + (data.risk_level || "N/A") + "\n" +
-      "Stability: " + (data.stability_score || "N/A") + "\n" +
-      "Conflict: " + (data.conflict_score || "N/A")
-    );
+    const riskText = document.getElementById("riskText");
 
-  } catch (err) {
-    console.error(err);
-    alert("API Error: Check connection");
+    riskText.innerText =
+      "Risk Level: " + data.risk_level;
+
+    riskText.className =
+      data.risk_level.toLowerCase();
+
+    document.getElementById("stability").innerText =
+      data.stability_score;
+
+    document.getElementById("conflict").innerText =
+      data.conflict_score;
+
+    document.getElementById("reason").innerText =
+      data.reason;
+
   }
+
+  catch(error){
+
+    alert("API Error");
+
+  }
+
 }
 
-// 1-click test
-function quickTest() {
-  analyze("I want a refund");
-}
-</script></body>
+</script>
+
+</body>
 </html>
