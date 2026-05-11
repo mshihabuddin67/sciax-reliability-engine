@@ -1,13 +1,11 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-from sentence_transformers import SentenceTransformer, util
 
 app = FastAPI()
 
 # ----------------------------
-# CORS
+# CORS (IMPORTANT FOR FRONTEND)
 # ----------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -18,117 +16,94 @@ app.add_middleware(
 )
 
 # ----------------------------
-# SIMPLE API KEY (demo)
-# ----------------------------
-VALID_API_KEYS = {
-    "sciax-demo-key-123": "user_1"
-}
-
-# ----------------------------
-# MODEL (Semantic Layer)
-# ----------------------------
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
-RISK_SIGNALS = [
-    "hack the system",
-    "exploit security",
-    "break into system",
-    "steal data",
-    "malware attack",
-    "bypass authentication"
-]
-
-# ----------------------------
-# INPUT MODEL
+# Input Schema
 # ----------------------------
 class InputModel(BaseModel):
     text: str
 
 # ----------------------------
-# AUTH
-# ----------------------------
-def verify_key(api_key: str):
-    if not api_key:
-        raise HTTPException(status_code=401, detail="API key missing")
-    if api_key not in VALID_API_KEYS:
-        raise HTTPException(status_code=403, detail="Invalid API key")
-
-# ----------------------------
-# ROOT
+# Root
 # ----------------------------
 @app.get("/")
 def root():
-    return {"status": "S-CIAX Semantic Engine Active"}
+    return {"status": "running"}
 
 # ----------------------------
-# ANALYZE ENDPOINT
+# S-CIAX ANALYZE ENGINE
 # ----------------------------
 @app.post("/analyze")
-def analyze(input: InputModel, x_api_key: str = Header(None)):
+def analyze(input: InputModel):
 
-    verify_key(x_api_key)
-
-    text = input.text.lower()
+    text = input.text
+    text_lower = text.lower()
 
     # ----------------------------
-    # BASE RULE ENGINE
+    # Default values
     # ----------------------------
-    risk_level = "Low"
     stability_score = 0.9
     conflict_score = 0.1
+    risk_level = "Low"
     reason = "Normal stable interaction detected"
 
-    high_risk_words = ["hack", "attack", "exploit", "steal", "malware"]
-    medium_risk_words = ["refund", "problem", "complaint", "error"]
+    # ----------------------------
+    # High risk keywords
+    # ----------------------------
+    high_risk_words = [
+        "hack", "attack", "exploit", "bypass",
+        "fraud", "steal", "destroy", "malware"
+    ]
 
-    # HIGH RISK RULES
-    for w in high_risk_words:
-        if w in text:
+    # ----------------------------
+    # Medium risk keywords
+    # ----------------------------
+    medium_risk_words = [
+        "refund", "angry", "problem", "report",
+        "complaint", "error", "broken"
+    ]
+
+    # ----------------------------
+    # High risk detection
+    # ----------------------------
+    for word in high_risk_words:
+        if word in text_lower:
             risk_level = "High"
             stability_score = 0.3
             conflict_score = 0.8
-            reason = "Rule-based high risk detected"
+            reason = "Detected exploit or attack-related terminology"
 
-    # MEDIUM RISK RULES
+    # ----------------------------
+    # Medium risk detection
+    # ----------------------------
     if risk_level != "High":
-        for w in medium_risk_words:
-            if w in text:
+        for word in medium_risk_words:
+            if word in text_lower:
                 risk_level = "Medium"
                 stability_score = 0.6
                 conflict_score = 0.5
-                reason = "Moderate instability detected"
+                reason = "Detected complaint or unstable interaction pattern"
 
     # ----------------------------
-    # SEMANTIC INTELLIGENCE LAYER
+    # Length influence
     # ----------------------------
-    input_emb = model.encode(text, convert_to_tensor=True)
-    signal_emb = model.encode(RISK_SIGNALS, convert_to_tensor=True)
+    length = len(text)
 
-    similarity = util.cos_sim(input_emb, signal_emb)
-    max_sim = float(similarity.max())
-
-    # Semantic boosting
-    if max_sim > 0.75:
-        risk_level = "High"
-        stability_score = min(stability_score, 0.35)
-        conflict_score = max(conflict_score, 0.75)
-        reason = "Semantic high-risk pattern detected"
-
-    elif max_sim > 0.5 and risk_level != "High":
-        risk_level = "Medium"
-        stability_score = 0.6
-        conflict_score = 0.5
-        reason = "Semantic similarity detected"
+    if length > 120:
+        stability_score -= 0.1
+        conflict_score += 0.1
 
     # ----------------------------
-    # RESPONSE
+    # Clamp values
+    # ----------------------------
+    stability_score = max(0.1, min(1.0, stability_score))
+    conflict_score = max(0.0, min(1.0, conflict_score))
+
+    # ----------------------------
+    # FINAL RESPONSE (CLEAN JSON)
     # ----------------------------
     return {
-        "input": input.text,
+        "input": text,
         "risk_level": risk_level,
         "stability_score": round(stability_score, 2),
         "conflict_score": round(conflict_score, 2),
-        "semantic_score": round(max_sim, 2),
-        "reason": reason,
-        "api_status": "authorized"
+        "reason": reason
     }
