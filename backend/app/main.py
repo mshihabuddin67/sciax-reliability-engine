@@ -1,11 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+from backend.app.config import (
+    API_KEYS,
+    DEFAULT_STABILITY,
+    DEFAULT_CONFLICT,
+    DEFAULT_RISK,
+    HIGH_RISK_THRESHOLD,
+    MEDIUM_RISK_THRESHOLD,
+    MULTI_LANG_RISK
+)
 
 app = FastAPI()
 
 # ----------------------------
-# CORS (IMPORTANT FOR FRONTEND)
+# CORS
 # ----------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -16,197 +26,123 @@ app.add_middleware(
 )
 
 # ----------------------------
-# Input Schema
+# INPUT MODEL
 # ----------------------------
 class InputModel(BaseModel):
     text: str
 
 # ----------------------------
-# Root
+# AUTH CHECK
+# ----------------------------
+def verify_key(api_key: str):
+
+    if not api_key:
+        raise HTTPException(status_code=401, detail="API key missing")
+
+    if api_key not in API_KEYS:
+        raise HTTPException(status_code=403, detail="Invalid API key")
+
+# ----------------------------
+# ROOT
 # ----------------------------
 @app.get("/")
 def root():
     return {
-        "status": "S-CIAX Multilingual Engine Running"
+        "status": "S-CIAX Engine Running",
+        "version": "1.1.0"
     }
 
 # ----------------------------
-# S-CIAX ANALYZE ENGINE
+# ANALYZE ENGINE
 # ----------------------------
 @app.post("/analyze")
-def analyze(input: InputModel):
+def analyze(input: InputModel, x_api_key: str = Header(None)):
 
-    text = input.text
-    text_lower = text.lower()
+    verify_key(x_api_key)
+
+    text = input.text.lower()
 
     # ----------------------------
-    # Default values
+    # DEFAULTS
     # ----------------------------
-    stability_score = 0.9
-    conflict_score = 0.1
-    risk_level = "Low"
+    stability_score = DEFAULT_STABILITY
+    conflict_score = DEFAULT_CONFLICT
+    risk_level = DEFAULT_RISK
     reason = "Normal stable interaction detected"
 
     # ----------------------------
-    # High risk keywords
+    # HIGH RISK
     # ----------------------------
     high_risk_words = [
-        "hack",
-        "attack",
-        "exploit",
-        "bypass",
-        "fraud",
-        "steal",
-        "destroy",
-        "malware"
+        "hack", "attack", "exploit",
+        "bypass", "fraud", "steal",
+        "destroy", "malware"
     ]
 
-    # ----------------------------
-    # Medium risk keywords
-    # ----------------------------
-    medium_risk_words = [
-        "refund",
-        "angry",
-        "problem",
-        "report",
-        "complaint",
-        "error",
-        "broken"
-    ]
-
-    # ----------------------------
-    # Lightweight semantic +
-    # multilingual signal map
-    # ----------------------------
-    MULTI_LANG_RISK = {
-
-        "hack": [
-            "breach",
-            "intrude",
-            "break into",
-            "সিস্টেম ভাঙা",
-            "ঘুসে পড়া",
-            "সিস্টেমে ঢোকা",
-            "सिस्टम तोड़ना",
-            "सिस्टम में घुसना"
-        ],
-
-        "attack": [
-            "assault",
-            "strike",
-            "আক্রমণ",
-            "हमला"
-        ],
-
-        "steal": [
-            "rob",
-            "take data",
-            "চুরি",
-            "ডাটা নেওয়া",
-            "चोरी"
-        ]
-    }
-
-    # ----------------------------
-    # High risk detection
-    # ----------------------------
     for word in high_risk_words:
 
-        if word in text_lower:
+        if word in text:
 
             risk_level = "High"
-
             stability_score = 0.3
-
             conflict_score = 0.8
-
-            reason = (
-                "Detected exploit or "
-                "attack-related terminology"
-            )
+            reason = "Detected exploit or attack-related terminology"
 
     # ----------------------------
-    # Medium risk detection
+    # MEDIUM RISK
     # ----------------------------
     if risk_level != "High":
 
+        medium_risk_words = [
+            "refund", "angry", "problem",
+            "report", "complaint", "error",
+            "broken"
+        ]
+
         for word in medium_risk_words:
 
-            if word in text_lower:
+            if word in text:
 
                 risk_level = "Medium"
-
                 stability_score = 0.6
-
                 conflict_score = 0.5
-
-                reason = (
-                    "Detected complaint or "
-                    "unstable interaction pattern"
-                )
+                reason = "Detected complaint or unstable interaction pattern"
 
     # ----------------------------
-    # Semantic + multilingual layer
+    # MULTILINGUAL LAYER
     # ----------------------------
     for category, words in MULTI_LANG_RISK.items():
 
-        for word in words:
+        for w in words:
 
-            if word.lower() in text_lower:
+            if w.lower() in text:
 
                 risk_level = "High"
-
                 stability_score = 0.3
-
                 conflict_score = 0.8
-
-                reason = (
-                    f"Multilingual semantic "
-                    f"signal detected ({category})"
-                )
+                reason = f"Multilingual signal detected ({category})"
 
     # ----------------------------
-    # Length influence
+    # LENGTH EFFECT
     # ----------------------------
-    length = len(text)
-
-    if length > 120:
+    if len(text) > 120:
 
         stability_score -= 0.1
-
         conflict_score += 0.1
 
     # ----------------------------
-    # Clamp values
+    # CLAMP
     # ----------------------------
-    stability_score = max(
-        0.1,
-        min(1.0, stability_score)
-    )
-
-    conflict_score = max(
-        0.0,
-        min(1.0, conflict_score)
-    )
+    stability_score = max(0.1, min(1.0, stability_score))
+    conflict_score = max(0.0, min(1.0, conflict_score))
 
     # ----------------------------
-    # FINAL RESPONSE
+    # RESPONSE
     # ----------------------------
     return {
-
-        "input": text,
-
+        "input": input.text,
         "risk_level": risk_level,
-
-        "stability_score": round(
-            stability_score,
-            2
-        ),
-
-        "conflict_score": round(
-            conflict_score,
-            2
-        ),
-
+        "stability_score": round(stability_score, 2),
+        "conflict_score": round(conflict_score, 2),
         "reason": reason
-    }
+        }
