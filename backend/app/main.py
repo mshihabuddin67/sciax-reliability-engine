@@ -26,7 +26,9 @@ class InputModel(BaseModel):
 # ----------------------------
 @app.get("/")
 def root():
-    return {"status": "running"}
+    return {
+        "status": "S-CIAX Multilingual Engine Running"
+    }
 
 # ----------------------------
 # S-CIAX ANALYZE ENGINE
@@ -49,38 +51,119 @@ def analyze(input: InputModel):
     # High risk keywords
     # ----------------------------
     high_risk_words = [
-        "hack", "attack", "exploit", "bypass",
-        "fraud", "steal", "destroy", "malware"
+        "hack",
+        "attack",
+        "exploit",
+        "bypass",
+        "fraud",
+        "steal",
+        "destroy",
+        "malware"
     ]
 
     # ----------------------------
     # Medium risk keywords
     # ----------------------------
     medium_risk_words = [
-        "refund", "angry", "problem", "report",
-        "complaint", "error", "broken"
+        "refund",
+        "angry",
+        "problem",
+        "report",
+        "complaint",
+        "error",
+        "broken"
     ]
+
+    # ----------------------------
+    # Lightweight semantic +
+    # multilingual signal map
+    # ----------------------------
+    MULTI_LANG_RISK = {
+
+        "hack": [
+            "breach",
+            "intrude",
+            "break into",
+            "সিস্টেম ভাঙা",
+            "ঘুসে পড়া",
+            "সিস্টেমে ঢোকা",
+            "सिस्टम तोड़ना",
+            "सिस्टम में घुसना"
+        ],
+
+        "attack": [
+            "assault",
+            "strike",
+            "আক্রমণ",
+            "हमला"
+        ],
+
+        "steal": [
+            "rob",
+            "take data",
+            "চুরি",
+            "ডাটা নেওয়া",
+            "चोरी"
+        ]
+    }
 
     # ----------------------------
     # High risk detection
     # ----------------------------
     for word in high_risk_words:
+
         if word in text_lower:
+
             risk_level = "High"
+
             stability_score = 0.3
+
             conflict_score = 0.8
-            reason = "Detected exploit or attack-related terminology"
+
+            reason = (
+                "Detected exploit or "
+                "attack-related terminology"
+            )
 
     # ----------------------------
     # Medium risk detection
     # ----------------------------
     if risk_level != "High":
+
         for word in medium_risk_words:
+
             if word in text_lower:
+
                 risk_level = "Medium"
+
                 stability_score = 0.6
+
                 conflict_score = 0.5
-                reason = "Detected complaint or unstable interaction pattern"
+
+                reason = (
+                    "Detected complaint or "
+                    "unstable interaction pattern"
+                )
+
+    # ----------------------------
+    # Semantic + multilingual layer
+    # ----------------------------
+    for category, words in MULTI_LANG_RISK.items():
+
+        for word in words:
+
+            if word.lower() in text_lower:
+
+                risk_level = "High"
+
+                stability_score = 0.3
+
+                conflict_score = 0.8
+
+                reason = (
+                    f"Multilingual semantic "
+                    f"signal detected ({category})"
+                )
 
     # ----------------------------
     # Length influence
@@ -88,22 +171,42 @@ def analyze(input: InputModel):
     length = len(text)
 
     if length > 120:
+
         stability_score -= 0.1
+
         conflict_score += 0.1
 
     # ----------------------------
     # Clamp values
     # ----------------------------
-    stability_score = max(0.1, min(1.0, stability_score))
-    conflict_score = max(0.0, min(1.0, conflict_score))
+    stability_score = max(
+        0.1,
+        min(1.0, stability_score)
+    )
+
+    conflict_score = max(
+        0.0,
+        min(1.0, conflict_score)
+    )
 
     # ----------------------------
-    # FINAL RESPONSE (CLEAN JSON)
+    # FINAL RESPONSE
     # ----------------------------
     return {
+
         "input": text,
+
         "risk_level": risk_level,
-        "stability_score": round(stability_score, 2),
-        "conflict_score": round(conflict_score, 2),
+
+        "stability_score": round(
+            stability_score,
+            2
+        ),
+
+        "conflict_score": round(
+            conflict_score,
+            2
+        ),
+
         "reason": reason
     }
