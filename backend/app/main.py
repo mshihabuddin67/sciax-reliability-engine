@@ -48,24 +48,24 @@ def normalize_text(text):
 
     replacements = {
 
-        # Banglish / Hinglish variations
+        # Hack variations
         "haek": "hack",
         "hek": "hack",
         "hyack": "hack",
+        "hax": "hack",
 
+        # Banglish / Hinglish
         "bypass korbo": "bypass",
+        "attack korbo": "attack",
         "system bhangbo": "destroy system",
 
-        "attack korbo": "attack",
         "hamla": "attack",
 
         "churi": "steal",
         "data churi": "steal data",
 
         "dhongsho": "destroy",
-        "borbad": "destroy",
-
-        "hax": "hack"
+        "borbad": "destroy"
     }
 
     normalized = text.lower()
@@ -77,6 +77,27 @@ def normalize_text(text):
     return normalized
 
 # ----------------------------
+# SAFE CONTEXTS
+# ----------------------------
+SAFE_CONTEXTS = [
+
+    "sleep schedule",
+    "life hack",
+    "study hack",
+    "productivity hack",
+
+    "game level",
+    "video game",
+    "gaming strategy",
+
+    "kill time",
+    "destroy boredom",
+
+    "attack strategy in chess",
+    "football attack"
+]
+
+# ----------------------------
 # ROOT
 # ----------------------------
 @app.get("/")
@@ -84,11 +105,11 @@ def root():
 
     return {
         "status": "S-CIAX Running",
-        "version": "3.0.0"
+        "version": "4.0.0"
     }
 
 # ----------------------------
-# ANALYZE
+# ANALYZE ENGINE
 # ----------------------------
 @app.post("/analyze")
 def analyze(input: InputModel, x_api_key: str = Header(None)):
@@ -103,13 +124,28 @@ def analyze(input: InputModel, x_api_key: str = Header(None)):
     text = normalize_text(original_text)
 
     # ----------------------------
-    # DEFAULTS
+    # DEFAULT VALUES
     # ----------------------------
     stability_score = DEFAULT_STABILITY
     conflict_score = DEFAULT_CONFLICT
     risk_level = DEFAULT_RISK
 
     reason = "Normal stable interaction detected"
+
+    # ----------------------------
+    # SAFE CONTEXT FILTER
+    # ----------------------------
+    safe_detected = False
+
+    for safe in SAFE_CONTEXTS:
+
+        if safe in text:
+
+            safe_detected = True
+
+            reason = (
+                f"Safe context detected ({safe})"
+            )
 
     # ----------------------------
     # SEMANTIC PATTERNS
@@ -130,40 +166,44 @@ def analyze(input: InputModel, x_api_key: str = Header(None)):
     # ----------------------------
     # SEMANTIC SIMILARITY
     # ----------------------------
-    for pattern in semantic_patterns:
+    if not safe_detected:
 
-        similarity = fuzz.partial_ratio(text, pattern)
+        for pattern in semantic_patterns:
 
-        if similarity > 80:
+            similarity = fuzz.partial_ratio(text, pattern)
 
-            risk_level = "High"
-
-            stability_score = 0.35
-            conflict_score = 0.75
-
-            reason = (
-                f"Semantic similarity matched risky intent "
-                f"({pattern}) score={similarity}"
-            )
-
-    # ----------------------------
-    # MULTILINGUAL LAYER
-    # ----------------------------
-    for category, words in MULTI_LANG_RISK.items():
-
-        for w in words:
-
-            if w.lower() in text:
+            if similarity > 80:
 
                 risk_level = "High"
 
-                stability_score = 0.3
-                conflict_score = 0.8
+                stability_score = 0.35
+                conflict_score = 0.75
 
                 reason = (
-                    f"Multilingual risky signal detected "
-                    f"({category})"
+                    f"Semantic similarity matched risky intent "
+                    f"({pattern}) score={similarity}"
                 )
+
+    # ----------------------------
+    # MULTILINGUAL RISK LAYER
+    # ----------------------------
+    if not safe_detected:
+
+        for category, words in MULTI_LANG_RISK.items():
+
+            for w in words:
+
+                if w.lower() in text:
+
+                    risk_level = "High"
+
+                    stability_score = 0.3
+                    conflict_score = 0.8
+
+                    reason = (
+                        f"Multilingual risky signal detected "
+                        f"({category})"
+                    )
 
     # ----------------------------
     # MEDIUM RISK
@@ -212,13 +252,13 @@ def analyze(input: InputModel, x_api_key: str = Header(None)):
         conflict_score += 0.1
 
     # ----------------------------
-    # CLAMP
+    # CLAMP VALUES
     # ----------------------------
     stability_score = max(0.1, min(1.0, stability_score))
     conflict_score = max(0.0, min(1.0, conflict_score))
 
     # ----------------------------
-    # RESPONSE
+    # FINAL RESPONSE
     # ----------------------------
     return {
 
