@@ -13,9 +13,9 @@ from backend.app.config import (
 
 app = FastAPI()
 
-# ----------------------------
+# --------------------------------------------------
 # CORS
-# ----------------------------
+# --------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,61 +24,84 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ----------------------------
+# --------------------------------------------------
 # INPUT MODEL
-# ----------------------------
+# --------------------------------------------------
 class InputModel(BaseModel):
     text: str
 
-# ----------------------------
-# AUTH
-# ----------------------------
+
+# --------------------------------------------------
+# API KEY VERIFICATION
+# --------------------------------------------------
 def verify_key(api_key: str):
 
     if not api_key:
-        raise HTTPException(status_code=401, detail="API key missing")
+        raise HTTPException(
+            status_code=401,
+            detail="API key missing"
+        )
 
     if api_key not in API_KEYS:
-        raise HTTPException(status_code=403, detail="Invalid API key")
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid API key"
+        )
 
-# ----------------------------
+
+# --------------------------------------------------
 # NORMALIZATION LAYER
-# ----------------------------
-def normalize_text(text):
+# --------------------------------------------------
+def normalize_text(text: str) -> str:
+    """
+    Lightweight multilingual normalization
+    for Bangla + Hindi + English mixed input
+    """
+
+    text = text.lower().strip()
 
     replacements = {
 
-        # Hack variations
+        # hack variations
         "haek": "hack",
         "hek": "hack",
         "hyack": "hack",
         "hax": "hack",
 
-        # Banglish / Hinglish
-        "bypass korbo": "bypass",
-        "attack korbo": "attack",
-        "system bhangbo": "destroy system",
+        # destroy variations
+        "dhongsho": "destroy",
+        "borbad": "destroy",
 
-        "hamla": "attack",
-
+        # steal variations
         "churi": "steal",
         "data churi": "steal data",
 
-        "dhongsho": "destroy",
-        "borbad": "destroy"
-    }
+        # attack variations
+        "hamla": "attack",
 
-    normalized = text.lower()
+        # system destruction
+        "system bhangbo": "destroy system",
+        "system bhang": "destroy system",
+
+        # bypass variations
+        "bypass korbo": "bypass",
+        "bypass kori": "bypass"
+    }
 
     for wrong, correct in replacements.items():
 
-        normalized = normalized.replace(wrong, correct)
+        if wrong in text:
+            text = text.replace(wrong, correct)
 
-    return normalized
+    # cleanup spaces
+    text = " ".join(text.split())
 
-# ----------------------------
+    return text
+
+
+# --------------------------------------------------
 # SAFE CONTEXTS
-# ----------------------------
+# --------------------------------------------------
 SAFE_CONTEXTS = [
 
     "sleep schedule",
@@ -93,144 +116,176 @@ SAFE_CONTEXTS = [
     "kill time",
     "destroy boredom",
 
-    "attack strategy in chess",
-    "football attack"
+    "football attack",
+    "attack strategy in chess"
 ]
 
-# ----------------------------
+
+# --------------------------------------------------
+# SEMANTIC RISK PATTERNS
+# --------------------------------------------------
+SEMANTIC_PATTERNS = [
+
+    "hack the system",
+    "bypass security",
+    "steal data",
+    "destroy system",
+    "attack server",
+    "exploit vulnerability",
+
+    "kill everyone",
+    "burn the house"
+]
+
+
+# --------------------------------------------------
+# MEDIUM RISK WORDS
+# --------------------------------------------------
+MEDIUM_RISK_WORDS = [
+
+    "angry",
+    "problem",
+    "broken",
+    "refund",
+    "complaint",
+    "issue",
+    "error",
+    "bad service",
+    "not working",
+
+    # Banglish
+    "rag",
+    "kharap",
+    "somossa",
+
+    # Hindi
+    "gussa",
+    "samasya"
+]
+
+
+# --------------------------------------------------
 # ROOT
-# ----------------------------
+# --------------------------------------------------
 @app.get("/")
 def root():
 
     return {
         "status": "S-CIAX Running",
-        "version": "4.0.0"
+        "version": "5.0.0"
     }
 
-# ----------------------------
+
+# --------------------------------------------------
 # ANALYZE ENGINE
-# ----------------------------
+# --------------------------------------------------
 @app.post("/analyze")
-def analyze(input: InputModel, x_api_key: str = Header(None)):
+def analyze(
+    input: InputModel,
+    x_api_key: str = Header(None)
+):
 
     verify_key(x_api_key)
 
     original_text = input.text
 
-    # ----------------------------
-    # NORMALIZED TEXT
-    # ----------------------------
+    # ----------------------------------------------
+    # NORMALIZATION
+    # ----------------------------------------------
     text = normalize_text(original_text)
 
-    # ----------------------------
+    # ----------------------------------------------
     # DEFAULT VALUES
-    # ----------------------------
+    # ----------------------------------------------
+    risk_level = DEFAULT_RISK
+
     stability_score = DEFAULT_STABILITY
     conflict_score = DEFAULT_CONFLICT
-    risk_level = DEFAULT_RISK
+
+    confidence_score = 0.55
 
     reason = "Normal stable interaction detected"
 
-    # ----------------------------
-    # SAFE CONTEXT FILTER
-    # ----------------------------
     safe_detected = False
 
+    # ----------------------------------------------
+    # SAFE CONTEXT CHECK
+    # ----------------------------------------------
     for safe in SAFE_CONTEXTS:
 
         if safe in text:
 
             safe_detected = True
 
+            risk_level = "Low"
+
+            stability_score = 0.9
+            conflict_score = 0.1
+
+            confidence_score = 0.92
+
             reason = (
                 f"Safe context detected ({safe})"
             )
 
-    # ----------------------------
-    # SEMANTIC PATTERNS
-    # ----------------------------
-    semantic_patterns = [
-
-        "hack the system",
-        "bypass security",
-        "steal data",
-        "destroy system",
-        "attack server",
-        "exploit vulnerability",
-
-        "kill everyone",
-        "burn the house"
-    ]
-
-    # ----------------------------
-    # SEMANTIC SIMILARITY
-    # ----------------------------
+    # ----------------------------------------------
+    # SEMANTIC SIMILARITY CHECK
+    # ----------------------------------------------
     if not safe_detected:
 
-        for pattern in semantic_patterns:
+        for pattern in SEMANTIC_PATTERNS:
 
-            similarity = fuzz.partial_ratio(text, pattern)
+            similarity = fuzz.partial_ratio(
+                text,
+                pattern
+            )
 
-            if similarity > 80:
+            if similarity >= 80:
 
                 risk_level = "High"
 
-                stability_score = 0.35
-                conflict_score = 0.75
+                stability_score = 0.3
+                conflict_score = 0.8
 
-                reason = (
-                    f"Semantic similarity matched risky intent "
-                    f"({pattern}) score={similarity}"
+                confidence_score = round(
+                    similarity / 100,
+                    2
                 )
 
-    # ----------------------------
-    # MULTILINGUAL RISK LAYER
-    # ----------------------------
-    if not safe_detected:
+                reason = (
+                    f"Semantic risky intent detected "
+                    f"({pattern})"
+                )
+
+    # ----------------------------------------------
+    # MULTILINGUAL RISK CHECK
+    # ----------------------------------------------
+    if not safe_detected and risk_level != "High":
 
         for category, words in MULTI_LANG_RISK.items():
 
-            for w in words:
+            for word in words:
 
-                if w.lower() in text:
+                if word.lower() in text:
 
                     risk_level = "High"
 
                     stability_score = 0.3
                     conflict_score = 0.8
 
+                    confidence_score = 0.89
+
                     reason = (
-                        f"Multilingual risky signal detected "
-                        f"({category})"
+                        f"Multilingual risky signal "
+                        f"detected ({category})"
                     )
 
-    # ----------------------------
-    # MEDIUM RISK
-    # ----------------------------
-    medium_risk_words = [
-
-        "problem",
-        "broken",
-        "complaint",
-        "refund",
-        "angry",
-        "issue",
-        "error",
-        "bad service",
-        "not working",
-
-        "rag",
-        "kharap",
-        "somossa",
-
-        "gussa",
-        "samasya"
-    ]
-
+    # ----------------------------------------------
+    # MEDIUM RISK CHECK
+    # ----------------------------------------------
     if risk_level != "High":
 
-        for word in medium_risk_words:
+        for word in MEDIUM_RISK_WORDS:
 
             if word in text:
 
@@ -239,27 +294,42 @@ def analyze(input: InputModel, x_api_key: str = Header(None)):
                 stability_score = 0.6
                 conflict_score = 0.5
 
+                confidence_score = 0.72
+
                 reason = (
-                    "Detected unstable or complaint-related interaction"
+                    "Detected unstable or "
+                    "complaint-related interaction"
                 )
 
-    # ----------------------------
-    # LENGTH EFFECT
-    # ----------------------------
+    # ----------------------------------------------
+    # LONG INPUT EFFECT
+    # ----------------------------------------------
     if len(text) > 120:
 
         stability_score -= 0.1
         conflict_score += 0.1
 
-    # ----------------------------
-    # CLAMP VALUES
-    # ----------------------------
-    stability_score = max(0.1, min(1.0, stability_score))
-    conflict_score = max(0.0, min(1.0, conflict_score))
+    # ----------------------------------------------
+    # VALUE CLAMP
+    # ----------------------------------------------
+    stability_score = max(
+        0.1,
+        min(1.0, stability_score)
+    )
 
-    # ----------------------------
+    conflict_score = max(
+        0.0,
+        min(1.0, conflict_score)
+    )
+
+    confidence_score = max(
+        0.0,
+        min(1.0, confidence_score)
+    )
+
+    # ----------------------------------------------
     # FINAL RESPONSE
-    # ----------------------------
+    # ----------------------------------------------
     return {
 
         "input": original_text,
@@ -268,9 +338,20 @@ def analyze(input: InputModel, x_api_key: str = Header(None)):
 
         "risk_level": risk_level,
 
-        "stability_score": round(stability_score, 2),
+        "confidence_score": round(
+            confidence_score,
+            2
+        ),
 
-        "conflict_score": round(conflict_score, 2),
+        "stability_score": round(
+            stability_score,
+            2
+        ),
+
+        "conflict_score": round(
+            conflict_score,
+            2
+        ),
 
         "reason": reason
-    }
+        }
