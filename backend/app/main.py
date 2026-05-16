@@ -2,6 +2,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from rapidfuzz import fuzz
+import re
 
 from backend.app.config import (
     API_KEYS,
@@ -16,6 +17,7 @@ app = FastAPI()
 # --------------------------------------------------
 # CORS
 # --------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,46 +29,67 @@ app.add_middleware(
 # --------------------------------------------------
 # INPUT MODEL
 # --------------------------------------------------
+
 class InputModel(BaseModel):
     text: str
 
+# --------------------------------------------------
+# API KEY VERIFY
+# --------------------------------------------------
 
-# --------------------------------------------------
-# API KEY VERIFICATION
-# --------------------------------------------------
 def verify_key(api_key: str):
 
     if not api_key:
+
         raise HTTPException(
             status_code=401,
             detail="API key missing"
         )
 
     if api_key not in API_KEYS:
+
         raise HTTPException(
             status_code=403,
             detail="Invalid API key"
         )
 
+# --------------------------------------------------
+# LANGUAGE SAFE DETECTION
+# --------------------------------------------------
+
+def detect_language_safe(text: str) -> str:
+
+    has_bangla = bool(
+        re.search(r'[\u0980-\u09FF]', text)
+    )
+
+    has_hindi = bool(
+        re.search(r'[\u0900-\u097F]', text)
+    )
+
+    if has_bangla or has_hindi:
+        return "mixed_or_non_latin"
+
+    return "latin"
 
 # --------------------------------------------------
-# NORMALIZATION LAYER
+# NORMALIZATION
 # --------------------------------------------------
+
 def normalize_text(text: str) -> str:
-    """
-    Lightweight multilingual normalization
-    for Bangla + Hindi + English mixed input
-    """
 
     text = text.lower().strip()
+
+    # remove extra spaces
+    text = re.sub(r'\s+', ' ', text)
 
     replacements = {
 
         # hack variations
         "haek": "hack",
         "hek": "hack",
-        "hyack": "hack",
         "hax": "hack",
+        "hyack": "hack",
 
         # destroy variations
         "dhongsho": "destroy",
@@ -76,16 +99,21 @@ def normalize_text(text: str) -> str:
         "churi": "steal",
         "data churi": "steal data",
 
-        # attack variations
+        # attack
         "hamla": "attack",
 
-        # system destruction
+        # system intent
         "system bhangbo": "destroy system",
         "system bhang": "destroy system",
 
-        # bypass variations
+        # bypass
         "bypass korbo": "bypass",
-        "bypass kori": "bypass"
+        "bypass kori": "bypass",
+
+        # violence transliteration
+        "mere felbo": "kill you",
+        "khun korbo": "murder",
+        "jaan mere dibo": "kill you"
     }
 
     for wrong, correct in replacements.items():
@@ -93,39 +121,36 @@ def normalize_text(text: str) -> str:
         if wrong in text:
             text = text.replace(wrong, correct)
 
-    # cleanup spaces
-    text = " ".join(text.split())
-
     return text
-
 
 # --------------------------------------------------
 # SAFE CONTEXTS
 # --------------------------------------------------
+
 SAFE_CONTEXTS = [
 
     "sleep schedule",
-    "life hack",
-    "study hack",
     "productivity hack",
+    "study hack",
+    "life hack",
 
     "game level",
-    "video game",
     "gaming strategy",
 
     "kill time",
     "destroy boredom",
 
     "football attack",
-    "attack strategy in chess"
+    "attack strategy"
 ]
 
-
 # --------------------------------------------------
-# SEMANTIC RISK PATTERNS
+# HIGH RISK PATTERNS
 # --------------------------------------------------
-SEMANTIC_PATTERNS = [
 
+HIGH_RISK_PATTERNS = [
+
+    # cyber
     "hack the system",
     "bypass security",
     "steal data",
@@ -133,14 +158,32 @@ SEMANTIC_PATTERNS = [
     "attack server",
     "exploit vulnerability",
 
+    # violence english
+    "kill you",
     "kill everyone",
-    "burn the house"
-]
+    "murder you",
+    "burn the house",
+    "i will kill you",
 
+    # banglish
+    "mere felbo",
+    "khun korbo",
+    "jaan mere dibo",
+
+    # bangla
+    "মেরে ফেলবো",
+    "খুন করবো",
+    "জান মেরে দিবো",
+
+    # hindi
+    "jaan se mar dunga",
+    "maar dunga"
+]
 
 # --------------------------------------------------
 # MEDIUM RISK WORDS
 # --------------------------------------------------
+
 MEDIUM_RISK_WORDS = [
 
     "angry",
@@ -151,34 +194,34 @@ MEDIUM_RISK_WORDS = [
     "issue",
     "error",
     "bad service",
-    "not working",
 
-    # Banglish
+    # banglish
     "rag",
-    "kharap",
     "somossa",
+    "kharap",
 
-    # Hindi
+    # hindi
     "gussa",
     "samasya"
 ]
 
-
 # --------------------------------------------------
 # ROOT
 # --------------------------------------------------
+
 @app.get("/")
 def root():
 
     return {
+
         "status": "S-CIAX Running",
-        "version": "5.0.0"
+        "version": "7.0.0"
     }
 
+# --------------------------------------------------
+# ANALYZE
+# --------------------------------------------------
 
-# --------------------------------------------------
-# ANALYZE ENGINE
-# --------------------------------------------------
 @app.post("/analyze")
 def analyze(
     input: InputModel,
@@ -189,14 +232,16 @@ def analyze(
 
     original_text = input.text
 
-    # ----------------------------------------------
-    # NORMALIZATION
-    # ----------------------------------------------
+    language_type = detect_language_safe(
+        original_text
+    )
+
     text = normalize_text(original_text)
 
-    # ----------------------------------------------
-    # DEFAULT VALUES
-    # ----------------------------------------------
+    # --------------------------------------------------
+    # DEFAULT
+    # --------------------------------------------------
+
     risk_level = DEFAULT_RISK
 
     stability_score = DEFAULT_STABILITY
@@ -208,9 +253,10 @@ def analyze(
 
     safe_detected = False
 
-    # ----------------------------------------------
+    # --------------------------------------------------
     # SAFE CONTEXT CHECK
-    # ----------------------------------------------
+    # --------------------------------------------------
+
     for safe in SAFE_CONTEXTS:
 
         if safe in text:
@@ -228,12 +274,15 @@ def analyze(
                 f"Safe context detected ({safe})"
             )
 
-    # ----------------------------------------------
-    # SEMANTIC SIMILARITY CHECK
-    # ----------------------------------------------
+            break
+
+    # --------------------------------------------------
+    # HIGH RISK CHECK
+    # --------------------------------------------------
+
     if not safe_detected:
 
-        for pattern in SEMANTIC_PATTERNS:
+        for pattern in HIGH_RISK_PATTERNS:
 
             similarity = fuzz.partial_ratio(
                 text,
@@ -252,15 +301,35 @@ def analyze(
                     2
                 )
 
-                reason = (
-                    f"Semantic risky intent detected "
-                    f"({pattern})"
-                )
+                # violence reasoning
+                if (
 
-    # ----------------------------------------------
-    # MULTILINGUAL RISK CHECK
-    # ----------------------------------------------
-    if not safe_detected and risk_level != "High":
+                    "kill" in pattern or
+                    "murder" in pattern or
+                    "মেরে ফেলবো" in pattern or
+                    "খুন" in pattern or
+                    "maar dunga" in pattern
+
+                ):
+
+                    reason = (
+                        "High risk violent intent detected"
+                    )
+
+                else:
+
+                    reason = (
+                        f"High risk intent detected "
+                        f"({pattern})"
+                    )
+
+                break
+
+    # --------------------------------------------------
+    # MULTILINGUAL RISK
+    # --------------------------------------------------
+
+    if risk_level != "High" and not safe_detected:
 
         for category, words in MULTI_LANG_RISK.items():
 
@@ -273,16 +342,28 @@ def analyze(
                     stability_score = 0.3
                     conflict_score = 0.8
 
-                    confidence_score = 0.89
+                    confidence_score = 0.85
 
-                    reason = (
-                        f"Multilingual risky signal "
-                        f"detected ({category})"
-                    )
+                    if category == "violence":
 
-    # ----------------------------------------------
-    # MEDIUM RISK CHECK
-    # ----------------------------------------------
+                        reason = (
+                            "Multilingual violent "
+                            "intent detected"
+                        )
+
+                    else:
+
+                        reason = (
+                            f"Multilingual risky signal "
+                            f"detected ({category})"
+                        )
+
+                    break
+
+    # --------------------------------------------------
+    # MEDIUM RISK
+    # --------------------------------------------------
+
     if risk_level != "High":
 
         for word in MEDIUM_RISK_WORDS:
@@ -301,17 +382,32 @@ def analyze(
                     "complaint-related interaction"
                 )
 
-    # ----------------------------------------------
+                break
+
+    # --------------------------------------------------
+    # LANGUAGE BOOST
+    # --------------------------------------------------
+
+    if language_type == "mixed_or_non_latin":
+
+        confidence_score = min(
+            confidence_score + 0.05,
+            1.0
+        )
+
+    # --------------------------------------------------
     # LONG INPUT EFFECT
-    # ----------------------------------------------
+    # --------------------------------------------------
+
     if len(text) > 120:
 
         stability_score -= 0.1
         conflict_score += 0.1
 
-    # ----------------------------------------------
-    # VALUE CLAMP
-    # ----------------------------------------------
+    # --------------------------------------------------
+    # CLAMP
+    # --------------------------------------------------
+
     stability_score = max(
         0.1,
         min(1.0, stability_score)
@@ -327,14 +423,17 @@ def analyze(
         min(1.0, confidence_score)
     )
 
-    # ----------------------------------------------
-    # FINAL RESPONSE
-    # ----------------------------------------------
+    # --------------------------------------------------
+    # RESPONSE
+    # --------------------------------------------------
+
     return {
 
         "input": original_text,
 
         "normalized_text": text,
+
+        "language_type": language_type,
 
         "risk_level": risk_level,
 
