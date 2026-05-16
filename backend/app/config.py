@@ -1,42 +1,70 @@
-# ----------------------------
-# S-CIAX CONFIGURATION
-# ----------------------------
+# --------------------------------------------------
+# API KEYS
+# --------------------------------------------------
 
-API_NAME = "S-CIAX Engine"
-VERSION = "1.1.0"
+API_KEYS = [
 
-API_KEYS = {
-    "sciax-demo-key-123": "demo-user"
-}
+    "sciax-demo-key-123"
+]
 
-# Default scores
+# --------------------------------------------------
+# DEFAULT VALUES
+# --------------------------------------------------
+
 DEFAULT_STABILITY = 0.9
 DEFAULT_CONFLICT = 0.1
 DEFAULT_RISK = "Low"
 
-# Thresholds
-HIGH_RISK_THRESHOLD = 0.75
+HIGH_RISK_THRESHOLD = 0.8
 MEDIUM_RISK_THRESHOLD = 0.5
 
-# ----------------------------
-# MULTILINGUAL RISK MAP
-# ----------------------------
+# --------------------------------------------------
+# MULTILINGUAL RISK SIGNALS
+# --------------------------------------------------
+
 MULTI_LANG_RISK = {
 
+    # --------------------------------------------------
+    # CYBER / EXPLOIT
+    # --------------------------------------------------
     "hack": [
-        "hack", "attack", "exploit",
-        "সিস্টেম হ্যাক", "আক্রমণ", "सिस्टम तोड़ना", "हमला"
+
+        "hack",
+        "haek",
+        "hek",
+        "hax",
+
+        "bypass",
+        "exploit",
+
+        "system bhangbo",
+        "destroy system",
+
+        "data churi",
+        "steal data"
     ],
 
-    "steal": [
-        "steal", "rob", "theft",
-        "চুরি", "ডাটা চুরি", "चोरी"
-    ],
+    # --------------------------------------------------
+    # VIOLENCE
+    # --------------------------------------------------
+    "violence": [
 
-    "malware": [
-        "malware", "virus", "trojan"
+        # english
+        "kill",
+        "murder",
+        "burn",
+
+        # banglish
+        "mere felbo",
+        "khun korbo",
+
+        # bangla unicode
+        "মেরে ফেলবো",
+        "খুন করবো",
+        "জান মেরে দিবো",
+
+        # hindi
+        "maar dunga",
+        "jaan se mar dunga"
     ]
 }
-
-# System mode
-DEBUG_MODE = True
