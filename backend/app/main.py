@@ -83,37 +83,55 @@ def normalize_text(text: str) -> str:
     # remove extra spaces
     text = re.sub(r'\s+', ' ', text)
 
+# --------------------------------------------------
+# REPLACEMENT 
+# --------------------------------------------------
+    
     replacements = {
 
-        # hack variations
-        "haek": "hack",
-        "hek": "hack",
-        "hax": "hack",
-        "hyack": "hack",
+    # hack variations
+    "haek": "hack",
+    "hek": "hack",
+    "hax": "hack",
+    "hyack": "hack",
 
-        # destroy variations
-        "dhongsho": "destroy",
-        "borbad": "destroy",
+    # destroy variations
+    "dhongsho": "destroy",
+    "borbad": "destroy",
 
-        # steal variations
-        "churi": "steal",
-        "data churi": "steal data",
+    # steal variations
+    "churi": "steal",
+    "data churi": "steal data",
 
-        # attack
-        "hamla": "attack",
+    # attack
+    "hamla": "attack",
 
-        # system intent
-        "system bhangbo": "destroy system",
-        "system bhang": "destroy system",
+    # system intent
+    "system bhangbo": "destroy system",
+    "system bhang": "destroy system",
 
-        # bypass
-        "bypass korbo": "bypass",
-        "bypass kori": "bypass",
+    # bypass
+    "bypass korbo": "bypass",
+    "bypass kori": "bypass",
 
-        # violence transliteration
-        "mere felbo": "kill you",
-        "khun korbo": "murder",
-        "jaan mere dibo": "kill you"
+    # violence transliteration
+    "mere felbo": "kill you",
+    "khun korbo": "murder",
+    "jaan mere dibo": "kill you",
+
+    # bangla indirect threats
+    "শেষ করে দিব": "kill you",
+    "শেষ করে দেব": "kill you",
+
+    "shesh kore dibo": "kill you",
+    "shesh kore debo": "kill you",
+
+    "উড়িয়ে দিব": "destroy",
+
+    "ধ্বংস করে দিব": "destroy system",
+
+    "তোকে দেখে নিব": "threat intent",
+    "toke dekhe nibo": "threat intent"
     }
 
     for wrong, correct in replacements.items():
@@ -164,16 +182,33 @@ HIGH_RISK_PATTERNS = [
     "murder you",
     "burn the house",
     "i will kill you",
+    "destroy you",
+
+    # indirect threats
+    "threat intent",
 
     # banglish
     "mere felbo",
     "khun korbo",
     "jaan mere dibo",
 
+    "shesh kore dibo",
+    "shesh kore debo",
+
+    "toke dekhe nibo",
+
     # bangla
     "মেরে ফেলবো",
     "খুন করবো",
     "জান মেরে দিবো",
+
+    "শেষ করে দিব",
+    "শেষ করে দেব",
+
+    "উড়িয়ে দিব",
+    "ধ্বংস করে দিব",
+
+    "তোকে দেখে নিব",
 
     # hindi
     "jaan se mar dunga",
@@ -384,17 +419,62 @@ def analyze(
 
                 break
 
-    # --------------------------------------------------
-    # LANGUAGE BOOST
-    # --------------------------------------------------
+# --------------------------------------------------
+# DYNAMIC CONFIDENCE SYSTEM
+# --------------------------------------------------
 
-    if language_type == "mixed_or_non_latin":
+signal_count = 0
 
-        confidence_score = min(
-            confidence_score + 0.05,
-            1.0
-        )
+# count multilingual risk signals
+for category, words in MULTI_LANG_RISK.items():
 
+    for word in words:
+
+        if word.lower() in text:
+            signal_count += 1
+
+# boost confidence from signals
+confidence_score += signal_count * 0.03
+
+# multilingual confidence boost
+if language_type == "mixed_or_non_latin":
+
+    confidence_score += 0.05
+
+# long input uncertainty
+if len(text.split()) > 20:
+
+    confidence_score -= 0.05
+
+# safe context stabilization
+if safe_detected:
+
+    confidence_score = max(
+        confidence_score,
+        0.90
+    )
+
+# medium ambiguity balancing
+if risk_level == "Medium":
+
+    confidence_score = min(
+        confidence_score,
+        0.80
+    )
+
+# high risk confidence floor
+if risk_level == "High":
+
+    confidence_score = max(
+        confidence_score,
+        0.85
+    )
+
+# final clamp
+confidence_score = max(
+    0.0,
+    min(1.0, confidence_score)
+)
     # --------------------------------------------------
     # LONG INPUT EFFECT
     # --------------------------------------------------
