@@ -53,15 +53,28 @@ MULTI_LANG_RISK = {
         "kill",
         "murder",
         "burn",
+        "destroy you",
 
         # banglish
         "mere felbo",
         "khun korbo",
 
+        "shesh kore dibo",
+        "shesh kore debo",
+
+        "toke dekhe nibo",
+
         # bangla unicode
         "মেরে ফেলবো",
         "খুন করবো",
-        "জান মেরে দিবো",
+
+        "শেষ করে দিব",
+        "শেষ করে দেব",
+
+        "উড়িয়ে দিব",
+        "ধ্বংস করে দিব",
+
+        "তোকে দেখে নিব",
 
         # hindi
         "maar dunga",
