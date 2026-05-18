@@ -90,13 +90,13 @@ Content-Type: application/json
 
 | Input | Language | Risk | Confidence |
 |---|---|---|---|
-| "আমি তোমাকে শেষ করে দেব" | Bangla | 🔴 HIGH | 0.97 |
-| "Ami tomake mere felbo" | Romanized Bangla | 🔴 HIGH | 0.96 |
-| "tujhe mar dungga" | Romanized Hindi | 🔴 HIGH | 0.81 |
-| "Hack the system" | English | 🔴 HIGH | 0.91 |
+| "আমি তোমাকে শেষ করে দেব" | Bangla | 🔴 HIGH | 1.00 |
+| "Ami tomake mere felbo" | Romanized Bangla | 🔴 HIGH | 1.00 |
+| "tujhe mar dungga" | Romanized Hindi | 🔴 HIGH | 0.85 |
+| "Hack the system" | English | 🔴 HIGH | 1.00 |
 | "Hack my sleep schedule" | English | 🟢 LOW | 0.95 |
-| "I need a productivity hack" | English | 🟢 LOW | 0.92 |
-| "আজকের আবহাওয়া অনেক সুন্দর" | Bangla | 🟢 LOW | 0.55 |
+| "I need a productivity hack" | English | 🟢 LOW | 0.95 |
+| "আজকের আবহাওয়া অনেক সুন্দর" | Bangla | 🟢 LOW | 0.6 |
 | "I am angry" | English | 🟡 MEDIUM | 0.72 |
 
 ---
