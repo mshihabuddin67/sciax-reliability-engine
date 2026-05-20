@@ -1,56 +1,59 @@
-from core.behavioral_signals import detect_behavioral_signals
-from core.intent_engine import classify_intent
-from core.explainability import generate_explainability
-from core.confidence import (
-    calibrate_confidence,
-    calculate_uncertainty
-)
-from core.language_profiles import detect_language_profile
+from core.weights import compute_fused_risk
+from core.policy_engine import decide_action
 
 
 def build_response(
     input_text,
-    normalized_text,
-    risk_level,
-    raw_confidence,
-    stability_score,
-    conflict_score
+    engine_output,
+    behavioral_signals,
+    intent_classification,
+    language_profile,
+    explainability
 ):
 
-    confidence = calibrate_confidence(raw_confidence)
+    # Convert signals into numeric scores
+    risk_score = 1.0 if engine_output["risk_level"] == "High" else 0.5
+    behavior_score = 0.8 if behavioral_signals else 0.3
+    intent_score = 0.9 if "violent_threat" in intent_classification else 0.4
+    language_score = 0.6 if language_profile else 0.5
 
-    response = {
+    # Fusion
+    fused_risk = compute_fused_risk(
+        risk_score,
+        behavior_score,
+        intent_score,
+        language_score
+    )
 
+    # Policy decision
+    action = decide_action(fused_risk)
+
+    return {
         "input": input_text,
 
-        "reconstructed_text": normalized_text,
+        "language_profile": language_profile,
 
-        "language_profile":
-            detect_language_profile(input_text),
+        "behavioral_signals": behavioral_signals,
 
-        "behavioral_signals":
-            detect_behavioral_signals(normalized_text),
-
-        "intent_classification":
-            classify_intent(normalized_text),
+        "intent_classification": intent_classification,
 
         "risk_assessment": {
-            "level": risk_level,
-            "confidence_score": confidence,
-            "uncertainty_score":
-                calculate_uncertainty(confidence)
+            "level": engine_output["risk_level"],
+            "confidence_score": round(fused_risk, 2),
+            "uncertainty_score": round(1 - fused_risk, 2)
         },
 
         "stability_analysis": {
-            "stability_score": stability_score,
-            "conflict_escalation":
-                "Elevated"
-                if conflict_score > 0.7
-                else "Minimal"
+            "stability_score": engine_output["stability_score"],
+            "conflict_escalation": "High" if fused_risk > 0.7 else "Low"
         },
 
-        "explainability_matrix":
-            generate_explainability(normalized_text)
-    }
+        "explainability_matrix": explainability,
 
-    return response
+        "action_recommendation": action,
+
+        "meta": {
+            "system_mode": "hybrid_v2_fusion",
+            "fusion_score": fused_risk
+        }
+    }
