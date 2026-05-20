@@ -1,13 +1,19 @@
 from flask import Blueprint, jsonify
 
-from core.response_builder import build_response
 from core.normalization import normalize_text
+from core.engine import sciax_engine
 
-# Existing imports
-# Keep your existing imports below if already present
-# from utils.xxx import ...
-# from models.xxx import ...
-# etc.
+from core.behavioral_signals import detect_behavioral_signals
+from core.intent_engine import classify_intent
+from core.language_profiles import detect_language_profile
+from core.explainability import generate_explanations
+
+from core.response_builder import build_response
+
+# Existing imports (keep yours if needed)
+# from core.metrics import compute_metrics
+# from core.risk import risk_analyzer
+# from core.perturbation import perturb
 
 
 analyze_route = Blueprint("analyze", __name__)
@@ -18,106 +24,46 @@ def analyze(input):
 
     print("\n========== S-CIAX REQUEST START ==========")
 
-    print("[INPUT]", input.text)
+    text = input.text
+    print("[INPUT]", text)
 
     # =====================================
     # 1. Normalize
     # =====================================
-    normalized_text = normalize_text(input.text)
-
-    print("[NORMALIZED]", normalized_text)
-
-    # =====================================
-    # 2. Generate Variants
-    # =====================================
-    variants = perturb(normalized_text)[:3]
-
-    print("[VARIANTS]", variants)
+    normalized = normalize_text(text)
+    print("[NORMALIZED]", normalized)
 
     # =====================================
-    # 3. Outputs
+    # 2. Engine (signal generator)
     # =====================================
-    outputs = [v for v in variants]
-
-    print("[OUTPUTS]", outputs)
-
-    # =====================================
-    # 4. Metrics
-    # =====================================
-    metrics = compute_metrics(outputs)
-
-    print("[METRICS]", metrics)
-    print("[METRICS TYPE]", type(metrics))
+    engine_output = sciax_engine(normalized)
+    print("[ENGINE OUTPUT]", engine_output)
 
     # =====================================
-    # 5. Conflict Score
+    # 3. Intelligence Layer
     # =====================================
-    cs = compute_conflict(outputs)
+    behavioral = detect_behavioral_signals(normalized)
+    intent = classify_intent(normalized)
+    language = detect_language_profile(text)
+    explainability = generate_explanations(normalized)
 
-    print("[CONFLICT]", cs)
-
-    # =====================================
-    # 6. Risk Analysis
-    # =====================================
-    risk = risk_analyzer(metrics, cs)
-
-    print("[RISK]", risk)
-    print("[RISK TYPE]", type(risk))
+    print("[BEHAVIOR]", behavioral)
+    print("[INTENT]", intent)
+    print("[LANG]", language)
 
     # =====================================
-    # SAFE BACKWARD-COMPATIBILITY HANDLING
+    # 4. Structured Response (HYBRID BRAIN)
     # =====================================
-
-    # Risk Level
-    if isinstance(risk, dict):
-        risk_level = risk.get(
-            "risk_level",
-            "Unknown"
-        )
-
-        raw_confidence = risk.get(
-            "confidence_score",
-            0.85
-        )
-
-    else:
-        risk_level = str(risk)
-        raw_confidence = 0.85
-
-    # Stability Score
-    if isinstance(metrics, dict):
-
-        stability_score = metrics.get(
-            "stability_score",
-            0.5
-        )
-
-    else:
-        stability_score = 0.5
-
-    # =====================================
-    # Structured Response
-    # =====================================
-
-    structured_response = build_response(
-
-        input_text=input.text,
-
-        normalized_text=normalized_text,
-
-        risk_level=risk_level,
-
-        raw_confidence=raw_confidence,
-
-        stability_score=stability_score,
-
-        conflict_score=cs
+    response = build_response(
+        input_text=text,
+        engine_output=engine_output,
+        behavioral_signals=behavioral,
+        intent_classification=intent,
+        language_profile=language,
+        explainability=explainability
     )
 
-    print("[PIPELINE] STRUCTURED RESPONSE ACTIVE")
+    print("[PIPELINE] HYBRID RESPONSE GENERATED")
+    print("========== S-CIAX REQUEST END ==========\n")
 
-    print(
-        "========== S-CIAX REQUEST END ==========\n"
-    )
-
-    return jsonify(structured_response)
+    return jsonify(response)
