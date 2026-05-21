@@ -1,91 +1,71 @@
-# --------------------------------------------------
-# API KEYS
-# --------------------------------------------------
+from backend.core.perturbation import generate_variants
+from backend.core.metrics import compute_stability_score
 
-API_KEYS = [
-    "sciax-demo-key-123"
-]
+from backend.core.config import (
+    VIOLENCE_STRONG,
+    CYBER_STRONG
+)
 
-# --------------------------------------------------
-# DEFAULT VALUES
-# --------------------------------------------------
+# ==================================================
+# S-CIAX HYBRID ENGINE
+# ==================================================
 
-DEFAULT_STABILITY = 0.9
-DEFAULT_CONFLICT = 0.1
-DEFAULT_RISK = "Low"
+def sciax_engine(prompt):
 
-HIGH_RISK_THRESHOLD = 0.8
-MEDIUM_RISK_THRESHOLD = 0.5
+    text = prompt.lower()
 
-# --------------------------------------------------
-# MULTILINGUAL RISK SIGNALS
-# --------------------------------------------------
+    variants = generate_variants(text)
 
-MULTI_LANG_RISK = {
+    stability = compute_stability_score(variants)
 
     # --------------------------------------------------
-    # CYBER / EXPLOIT
+    # HARD VIOLENCE CHECK
     # --------------------------------------------------
 
-    "hack": [
+    for v in VIOLENCE_STRONG:
+        if v in text:
+            return {
 
-        "hack",
-        "haek",
-        "hek",
-        "hax",
+                "prompt": text,
+                "variants": variants,
 
-        "bypass",
-        "exploit",
-
-        "system bhangbo",
-        "destroy system",
-
-        "data churi",
-        "steal data"
-    ],
+                "stability_score": 0.15,
+                "risk_level": "High"
+            }
 
     # --------------------------------------------------
-    # VIOLENCE
+    # CYBER RISK CHECK
     # --------------------------------------------------
 
-    "violence": [
+    for c in CYBER_STRONG:
+        if c in text:
+            return {
 
-        # english
-        "kill",
-        "murder",
-        "burn",
-        "destroy you",
+                "prompt": text,
+                "variants": variants,
 
-        # banglish
-        "mere felbo",
-        "khun korbo",
+                "stability_score": 0.25,
+                "risk_level": "High"
+            }
 
-        "shesh kore dibo",
-        "shesh kore debo",
+    # --------------------------------------------------
+    # DEFAULT LOGIC
+    # --------------------------------------------------
 
-        "toke dekhe nibo",
+    if stability > 0.75:
+        risk = "Low"
 
-        # bangla unicode
-        "মেরে ফেলবো",
-        "খুন করবো",
+    elif stability > 0.55:
+        risk = "Medium"
 
-        "শেষ করে দিব",
-        "শেষ করে দেব",
+    else:
+        risk = "High"
 
-        "উড়িয়ে দিব",
-        "ধ্বংস করে দিব",
+    return {
 
-        "তোকে দেখে নিব",
+        "prompt": text,
+        "variants": variants,
 
-        # hindi
-        "maar dunga",
-        "jaan se mar dunga"
-    ]
-}
-
-# --------------------------------------------------
-# SYSTEM MODE
-# --------------------------------------------------
-
-SYSTEM_MODE = "Hybrid-Light"
-SYSTEM_VERSION = "9.0.0"
+        "stability_score": round(stability, 2),
+        "risk_level": risk
+    }
