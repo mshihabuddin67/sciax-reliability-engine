@@ -1,36 +1,73 @@
-def generate_explainability(text):
-
-    text = text.lower()
+def generate_explanations(text):
 
     explanations = []
 
-    if "dekhe nibo" in text:
-        explanations.append(
-            "implicit threat structure identified"
-        )
+    text = text.lower()
+
+    # -----------------------------------
+    # Threat signals
+    # -----------------------------------
+
+    if (
+        "kill" in text or
+        "murder" in text or
+        "mere felbo" in text or
+        "khun korbo" in text
+    ):
 
         explanations.append(
-            "target-directed phrasing detected"
+            "violent intent structure detected"
         )
 
-    if "hack the system" in text:
+    # -----------------------------------
+    # Threat escalation
+    # -----------------------------------
+
+    if (
+        "toke dekhe nibo" in text or
+        "dekhe nibo" in text
+    ):
+
         explanations.append(
-            "unauthorized system access intent identified"
+            "implicit threat escalation detected"
         )
 
-    if "mar dunga" in text:
+    # -----------------------------------
+    # Cyber abuse
+    # -----------------------------------
+
+    if (
+        "hack" in text or
+        "bypass" in text or
+        "exploit" in text
+    ):
+
         explanations.append(
-            "violent aggression pattern recognized"
+            "cyber abuse pattern detected"
         )
 
-    if "sesh kore dibo" in text:
+    # -----------------------------------
+    # Safe context
+    # -----------------------------------
+
+    if (
+        "sleep schedule" in text or
+        "study hack" in text or
+        "life hack" in text
+    ):
+
         explanations.append(
-            "direct violent intent pattern identified"
+            "safe contextual usage detected"
         )
 
-    if "sleep schedule" in text:
+    # -----------------------------------
+    # Default
+    # -----------------------------------
+
+    if not explanations:
+
         explanations.append(
-            "non-harmful contextual usage identified"
+            "normal interaction pattern detected"
         )
 
     return explanations
