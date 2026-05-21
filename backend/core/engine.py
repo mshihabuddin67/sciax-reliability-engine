@@ -7,12 +7,22 @@ from backend.core.config import (
 )
 
 # ==================================================
-# S-CIAX HYBRID ENGINE
+# S-CIAX HYBRID ENGINE (STABLE VERSION)
 # ==================================================
+
+def normalize_simple(text: str) -> str:
+
+    text = text.strip()
+
+    # lightweight normalization (no overkill)
+    text = text.replace("  ", " ")
+
+    return text
+
 
 def sciax_engine(prompt):
 
-    text = prompt.lower()
+    text = normalize_simple(prompt)
 
     variants = generate_variants(text)
 
@@ -23,12 +33,12 @@ def sciax_engine(prompt):
     # --------------------------------------------------
 
     for v in VIOLENCE_STRONG:
-        if v in text:
-            return {
 
+        if v in text:
+
+            return {
                 "prompt": text,
                 "variants": variants,
-
                 "stability_score": 0.15,
                 "risk_level": "High"
             }
@@ -38,18 +48,18 @@ def sciax_engine(prompt):
     # --------------------------------------------------
 
     for c in CYBER_STRONG:
-        if c in text:
-            return {
 
+        if c in text:
+
+            return {
                 "prompt": text,
                 "variants": variants,
-
                 "stability_score": 0.25,
                 "risk_level": "High"
             }
 
     # --------------------------------------------------
-    # DEFAULT LOGIC
+    # CONTEXT-AWARE DEFAULT LOGIC
     # --------------------------------------------------
 
     if stability > 0.75:
@@ -62,10 +72,8 @@ def sciax_engine(prompt):
         risk = "High"
 
     return {
-
         "prompt": text,
         "variants": variants,
-
         "stability_score": round(stability, 2),
         "risk_level": risk
     }
