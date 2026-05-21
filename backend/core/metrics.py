@@ -1,11 +1,21 @@
-import random
+def compute_stability_score(variants):
 
-def compute_metrics(outputs):
-    return {
-        "SI": round(random.uniform(0.4, 0.9), 2),
-        "DI": round(random.uniform(0.1, 0.7), 2),
-        "SV": round(random.uniform(0.1, 0.6), 2)
-    }
+    """
+    Simple lightweight stability scoring
+    for Render free-tier compatibility.
+    """
 
-def compute_conflict(outputs):
-    return round(random.uniform(0.1, 0.9), 2)
+    if not variants:
+        return 0.5
+
+    unique_variants = len(set(variants))
+
+    total_variants = len(variants)
+
+    diversity_ratio = (
+        unique_variants / total_variants
+    )
+
+    stability_score = 1 - diversity_ratio
+
+    return round(stability_score, 2)
