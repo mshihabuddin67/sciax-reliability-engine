@@ -1,14 +1,49 @@
-return {
-    ...
-    "summary": "...",
-    "variants": variants,
-    "outputs": outputs,
-    "is_unstable": risk == "HIGH",
+def build_response(
 
-    "example_comparison": {
-        "variant_1": variants[0],
-        "variant_2": variants[1],
-        "output_1": outputs[0],
-        "output_2": outputs[1]
+    input_text,
+
+    engine_output,
+
+    behavioral_signals,
+
+    intent_classification,
+
+    language_profile,
+
+    explainability
+):
+
+    return {
+
+        "input": input_text,
+
+        "language_profile":
+            language_profile,
+
+        "behavioral_signals":
+            behavioral_signals,
+
+        "intent_classification":
+            intent_classification,
+
+        "engine_output":
+            engine_output,
+
+        "risk_assessment": {
+
+            "level":
+                engine_output.get(
+                    "risk_level",
+                    "Unknown"
+                ),
+
+            "stability_score":
+                engine_output.get(
+                    "stability_score",
+                    0.5
+                )
+        },
+
+        "explainability":
+            explainability
     }
-}
