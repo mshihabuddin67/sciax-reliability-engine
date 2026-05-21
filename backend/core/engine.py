@@ -1,33 +1,14 @@
-from backend.core.perturbation import (
-    generate_variants
+from backend.core.perturbation import generate_variants
+from backend.core.metrics import compute_stability_score
+
+from backend.core.config import (
+    VIOLENCE_STRONG,
+    CYBER_STRONG
 )
 
-from backend.core.metrics import (
-    compute_stability_score
-)
-
-
-SAFE_CONTEXTS = [
-
-    "sleep schedule",
-    "study hack",
-    "life hack",
-    "productivity hack",
-    "gaming strategy",
-    "game level"
-]
-
-
-HIGH_RISK_PATTERNS = [
-
-    "hack the system",
-    "bypass security",
-    "steal data",
-    "exploit vulnerability",
-    "kill you",
-    "murder"
-]
-
+# ==================================================
+# S-CIAX HYBRID ENGINE
+# ==================================================
 
 def sciax_engine(prompt):
 
@@ -35,78 +16,56 @@ def sciax_engine(prompt):
 
     variants = generate_variants(text)
 
-    stability = compute_stability_score(
-        variants
-    )
+    stability = compute_stability_score(variants)
 
-    # ---------------------------------
-    # SAFE CONTEXT OVERRIDE
-    # ---------------------------------
+    # --------------------------------------------------
+    # HARD VIOLENCE CHECK
+    # --------------------------------------------------
 
-    for safe in SAFE_CONTEXTS:
-
-        if safe in text:
-
+    for v in VIOLENCE_STRONG:
+        if v in text:
             return {
 
                 "prompt": text,
-
                 "variants": variants,
 
-                "stability_score":
-                    0.91,
-
-                "risk_level":
-                    "Low"
+                "stability_score": 0.15,
+                "risk_level": "High"
             }
 
-    # ---------------------------------
-    # HIGH RISK PATTERN
-    # ---------------------------------
+    # --------------------------------------------------
+    # CYBER RISK CHECK
+    # --------------------------------------------------
 
-    for pattern in HIGH_RISK_PATTERNS:
-
-        if pattern in text:
-
+    for c in CYBER_STRONG:
+        if c in text:
             return {
 
                 "prompt": text,
-
                 "variants": variants,
 
-                "stability_score":
-                    0.25,
-
-                "risk_level":
-                    "High"
+                "stability_score": 0.25,
+                "risk_level": "High"
             }
 
-    # ---------------------------------
+    # --------------------------------------------------
     # DEFAULT LOGIC
-    # ---------------------------------
+    # --------------------------------------------------
 
-    risk = (
+    if stability > 0.75:
+        risk = "Low"
 
-        "Low"
+    elif stability > 0.55:
+        risk = "Medium"
 
-        if stability > 0.75
-
-        else "Medium"
-
-        if stability > 0.55
-
-        else "Low"
-    )
+    else:
+        risk = "High"
 
     return {
 
         "prompt": text,
-
         "variants": variants,
 
-        "stability_score":
-            round(stability, 2),
-
-        "risk_level":
-            risk
-            }
+        "stability_score": round(stability, 2),
+        "risk_level": risk
+    }
