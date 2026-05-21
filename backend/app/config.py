@@ -82,3 +82,10 @@ MULTI_LANG_RISK = {
         "jaan se mar dunga"
     ]
 }
+
+# --------------------------------------------------
+# SYSTEM MODE
+# --------------------------------------------------
+
+SYSTEM_MODE = "Hybrid-Light"
+SYSTEM_VERSION = "9.0.0"
