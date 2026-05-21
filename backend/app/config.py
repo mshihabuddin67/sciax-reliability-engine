@@ -1,71 +1,89 @@
-from backend.core.perturbation import generate_variants
-from backend.core.metrics import compute_stability_score
-
-from backend.core.config import (
-    VIOLENCE_STRONG,
-    CYBER_STRONG
-)
-
 # ==================================================
-# S-CIAX HYBRID ENGINE
+# S-CIAX CONFIGURATION
 # ==================================================
 
-def sciax_engine(prompt):
+API_KEYS = [
+    "sciax-demo-key-123"
+]
 
-    text = prompt.lower()
+# --------------------------------------------------
+# DEFAULT VALUES
+# --------------------------------------------------
 
-    variants = generate_variants(text)
+DEFAULT_STABILITY = 0.9
+DEFAULT_CONFLICT = 0.1
+DEFAULT_RISK = "Low"
 
-    stability = compute_stability_score(variants)
+# --------------------------------------------------
+# MULTILINGUAL RISK DATASET
+# --------------------------------------------------
 
-    # --------------------------------------------------
-    # HARD VIOLENCE CHECK
-    # --------------------------------------------------
+VIOLENCE_STRONG = [
 
-    for v in VIOLENCE_STRONG:
-        if v in text:
-            return {
+    # English
+    "kill you",
+    "i will kill you",
+    "murder you",
+    "destroy you",
 
-                "prompt": text,
-                "variants": variants,
+    # Banglish
+    "ami toke marbo",
+    "ami toke mere felbo",
+    "toke khun korbo",
+    "toke shesh kore dibo",
+    "toke dekhe nibo",
 
-                "stability_score": 0.15,
-                "risk_level": "High"
-            }
+    # Bangla
+    "আমি তোকে মারবো",
+    "আমি তোকে মেরে ফেলবো",
+    "তোকে খুন করবো",
+    "তোকে দেখে নিব",
 
-    # --------------------------------------------------
-    # CYBER RISK CHECK
-    # --------------------------------------------------
+    # Hindi
+    "tujhe maar dunga",
+    "tujhe mar dunga",
+    "tujhe khatam kar dunga"
+]
 
-    for c in CYBER_STRONG:
-        if c in text:
-            return {
+# --------------------------------------------------
 
-                "prompt": text,
-                "variants": variants,
+CYBER_STRONG = [
 
-                "stability_score": 0.25,
-                "risk_level": "High"
-            }
+    # English
+    "hack the system",
+    "bypass security",
+    "steal data",
+    "exploit vulnerability",
 
-    # --------------------------------------------------
-    # DEFAULT LOGIC
-    # --------------------------------------------------
+    # Banglish
+    "system hack korbo",
+    "data churi korbo",
+    "system bhangbo",
 
-    if stability > 0.75:
-        risk = "Low"
+    # Bangla
+    "সিস্টেম হ্যাক করবো",
+    "ডাটা চুরি করবো",
+    "সিকিউরিটি ভাঙবো",
 
-    elif stability > 0.55:
-        risk = "Medium"
+    # Hindi
+    "system hack karunga",
+    "data churaunga"
+]
 
-    else:
-        risk = "High"
+# --------------------------------------------------
 
-    return {
+BEHAVIOR_TRIGGERS = [
 
-        "prompt": text,
-        "variants": variants,
+    "toke",
+    "tui",
+    "tujhe",
+    "tomake",
 
-        "stability_score": round(stability, 2),
-        "risk_level": risk
-    }
+    "marbo",
+    "kill",
+    "khun",
+    "destroy",
+
+    "dekhe nibo",
+    "shesh kore dibo"
+]
