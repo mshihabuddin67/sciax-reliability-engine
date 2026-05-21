@@ -1,69 +1,82 @@
-from flask import Blueprint, jsonify
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-from core.normalization import normalize_text
-from core.engine import sciax_engine
+from backend.core.normalization import (
+    normalize_text
+)
 
-from core.behavioral_signals import detect_behavioral_signals
-from core.intent_engine import classify_intent
-from core.language_profiles import detect_language_profile
-from core.explainability import generate_explanations
+from backend.core.engine import (
+    sciax_engine
+)
 
-from core.response_builder import build_response
+from backend.core.behavioral_signals import (
+    detect_behavioral_signals
+)
 
-# Existing imports (keep yours if needed)
-# from core.metrics import compute_metrics
-# from core.risk import risk_analyzer
-# from core.perturbation import perturb
+from backend.core.intent_engine import (
+    classify_intent
+)
+
+from backend.core.language_profiles import (
+    detect_language_profile
+)
+
+from backend.core.explainability import (
+    generate_explanations
+)
+
+from backend.app.response import (
+    build_response
+)
+
+analyze_route = APIRouter()
 
 
-analyze_route = Blueprint("analyze", __name__)
+class InputModel(BaseModel):
+
+    text: str
 
 
 @analyze_route.post("/analyze")
-def analyze(input):
-
-    print("\n========== S-CIAX REQUEST START ==========")
+def analyze(input: InputModel):
 
     text = input.text
-    print("[INPUT]", text)
 
-    # =====================================
-    # 1. Normalize
-    # =====================================
     normalized = normalize_text(text)
-    print("[NORMALIZED]", normalized)
 
-    # =====================================
-    # 2. Engine (signal generator)
-    # =====================================
-    engine_output = sciax_engine(normalized)
-    print("[ENGINE OUTPUT]", engine_output)
+    engine_output = sciax_engine(
+        normalized
+    )
 
-    # =====================================
-    # 3. Intelligence Layer
-    # =====================================
-    behavioral = detect_behavioral_signals(normalized)
-    intent = classify_intent(normalized)
-    language = detect_language_profile(text)
-    explainability = generate_explanations(normalized)
+    behavioral = detect_behavioral_signals(
+        normalized
+    )
 
-    print("[BEHAVIOR]", behavioral)
-    print("[INTENT]", intent)
-    print("[LANG]", language)
+    intent = classify_intent(
+        normalized
+    )
 
-    # =====================================
-    # 4. Structured Response (HYBRID BRAIN)
-    # =====================================
+    language = detect_language_profile(
+        text
+    )
+
+    explainability = generate_explanations(
+        normalized
+    )
+
     response = build_response(
+
         input_text=text,
+
         engine_output=engine_output,
+
         behavioral_signals=behavioral,
+
         intent_classification=intent,
+
         language_profile=language,
+
         explainability=explainability
     )
 
-    print("[PIPELINE] HYBRID RESPONSE GENERATED")
-    print("========== S-CIAX REQUEST END ==========\n")
-
-    return jsonify(response)
+    return response
