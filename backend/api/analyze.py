@@ -1,82 +1,63 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from backend.core.normalization import (
-    normalize_text
-)
+from backend.core.normalization import normalize_text
+from backend.core.engine import sciax_engine
+from backend.core.behavioral_signals import detect_behavioral_signals
+from backend.core.intent_engine import classify_intent
+from backend.core.language_profiles import detect_language_profile
+from backend.core.explainability import generate_explanations
+from backend.app.response import build_response
 
-from backend.core.engine import (
-    sciax_engine
-)
-
-from backend.core.behavioral_signals import (
-    detect_behavioral_signals
-)
-
-from backend.core.intent_engine import (
-    classify_intent
-)
-
-from backend.core.language_profiles import (
-    detect_language_profile
-)
-
-from backend.core.explainability import (
-    generate_explanations
-)
-
-from backend.app.response import (
-    build_response
-)
 
 analyze_route = APIRouter()
 
 
 class InputModel(BaseModel):
-
     text: str
 
 
 @analyze_route.post("/analyze")
 def analyze(input: InputModel):
 
-    text = input.text
+    print("\n========== S-CIAX REQUEST START ==========")
+    print("[INPUT]", input.text)
 
-    normalized = normalize_text(text)
+    # 1. Normalize
+    normalized = normalize_text(input.text)
+    print("[NORMALIZED]", normalized)
 
-    engine_output = sciax_engine(
-        normalized
-    )
+    # 2. Engine
+    engine_output = sciax_engine(normalized)
+    print("[ENGINE OUTPUT]", engine_output)
 
-    behavioral = detect_behavioral_signals(
-        normalized
-    )
+    # 3. Behavioral signals
+    behavioral = detect_behavioral_signals(normalized)
+    print("[BEHAVIORAL]", behavioral)
 
-    intent = classify_intent(
-        normalized
-    )
+    # 4. Intent classification
+    intent = classify_intent(normalized)
+    print("[INTENT]", intent)
 
-    language = detect_language_profile(
-        text
-    )
+    # 5. Language detection
+    language = detect_language_profile(input.text)
+    print("[LANGUAGE]", language)
 
-    explainability = generate_explanations(
-        normalized
-    )
+    # 6. Explainability
+    explainability = generate_explanations(normalized)
+    print("[EXPLAINABILITY]", explainability)
 
+    # 7. Final response
     response = build_response(
-
-        input_text=text,
-
+        input_text=input.text,
         engine_output=engine_output,
-
         behavioral_signals=behavioral,
-
         intent_classification=intent,
-
         language_profile=language,
-
         explainability=explainability
     )
+
+    print("[PIPELINE] RESPONSE READY")
+    print("========== S-CIAX REQUEST END ==========\n")
 
     return response
