@@ -22,6 +22,65 @@ HIGH_RISK_THRESHOLD = 0.75
 MEDIUM_RISK_THRESHOLD = 0.55
 
 # --------------------------------------------------
+# VIOLENCE / THREAT DETECTION
+# --------------------------------------------------
+
+VIOLENCE_STRONG = [
+
+    # English
+    "kill you",
+    "i will kill you",
+    "murder you",
+    "destroy you",
+
+    # Banglish
+    "ami toke marbo",
+    "ami toke mere felbo",
+    "toke khun korbo",
+    "toke shesh kore dibo",
+    "toke dekhe nibo",
+
+    # Bangla
+    "আমি তোকে মারবো",
+    "আমি তোকে মেরে ফেলবো",
+    "তোকে খুন করবো",
+    "তোকে দেখে নিব",
+    "শেষ করে দিব",
+
+    # Hindi
+    "tujhe maar dunga",
+    "tujhe mar dunga",
+    "tujhe khatam kar dunga"
+]
+
+# --------------------------------------------------
+# CYBER / EXPLOIT DETECTION
+# --------------------------------------------------
+
+CYBER_STRONG = [
+
+    # English
+    "hack the system",
+    "bypass security",
+    "steal data",
+    "exploit vulnerability",
+
+    # Banglish
+    "system hack korbo",
+    "data churi korbo",
+    "system bhangbo",
+
+    # Bangla
+    "সিস্টেম হ্যাক করবো",
+    "ডাটা চুরি করবো",
+    "সিকিউরিটি ভাঙবো",
+
+    # Hindi
+    "system hack karunga",
+    "data churaunga"
+]
+
+# --------------------------------------------------
 # SYSTEM MODE
 # --------------------------------------------------
 
@@ -91,7 +150,7 @@ MULTI_LANG_RISK = {
         "system hack karunga",
         "data churaunga",
         "security tod dunga"
-    ],
+    ]
 
     # ==================================================
     # VIOLENCE / THREAT
