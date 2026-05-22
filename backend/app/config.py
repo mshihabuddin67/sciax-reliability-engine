@@ -22,65 +22,6 @@ HIGH_RISK_THRESHOLD = 0.75
 MEDIUM_RISK_THRESHOLD = 0.55
 
 # --------------------------------------------------
-# VIOLENCE / THREAT DETECTION
-# --------------------------------------------------
-
-VIOLENCE_STRONG = [
-
-    # English
-    "kill you",
-    "i will kill you",
-    "murder you",
-    "destroy you",
-
-    # Banglish
-    "ami toke marbo",
-    "ami toke mere felbo",
-    "toke khun korbo",
-    "toke shesh kore dibo",
-    "toke dekhe nibo",
-
-    # Bangla
-    "আমি তোকে মারবো",
-    "আমি তোকে মেরে ফেলবো",
-    "তোকে খুন করবো",
-    "তোকে দেখে নিব",
-    "শেষ করে দিব",
-
-    # Hindi
-    "tujhe maar dunga",
-    "tujhe mar dunga",
-    "tujhe khatam kar dunga"
-]
-
-# --------------------------------------------------
-# CYBER / EXPLOIT DETECTION
-# --------------------------------------------------
-
-CYBER_STRONG = [
-
-    # English
-    "hack the system",
-    "bypass security",
-    "steal data",
-    "exploit vulnerability",
-
-    # Banglish
-    "system hack korbo",
-    "data churi korbo",
-    "system bhangbo",
-
-    # Bangla
-    "সিস্টেম হ্যাক করবো",
-    "ডাটা চুরি করবো",
-    "সিকিউরিটি ভাঙবো",
-
-    # Hindi
-    "system hack karunga",
-    "data churaunga"
-]
-
-# --------------------------------------------------
 # SYSTEM MODE
 # --------------------------------------------------
 
@@ -110,101 +51,107 @@ SAFE_CONTEXTS = [
 ]
 
 # --------------------------------------------------
+# VIOLENCE / THREAT DETECTION
+# --------------------------------------------------
+
+VIOLENCE_STRONG = [
+
+    # ---------------- ENGLISH ----------------
+
+    "kill you",
+    "i will kill you",
+    "murder you",
+    "destroy you",
+    "burn you",
+
+    # ---------------- BANGLISH ----------------
+
+    "ami toke marbo",
+    "ami toke mere felbo",
+
+    "toke khun korbo",
+
+    "shesh kore dibo",
+    "shesh kore debo",
+
+    "toke shesh kore dibo",
+    "toke shesh kore debo",
+
+    "toke dekhe nibo",
+
+    # ---------------- BANGLA ----------------
+
+    "আমি তোকে মারবো",
+    "আমি তোকে মেরে ফেলবো",
+
+    "তোকে খুন করবো",
+
+    "তোকে দেখে নিব",
+
+    "শেষ করে দিব",
+    "শেষ করে দেব",
+
+    "তোকে শেষ করে দিব",
+    "তোকে শেষ করে দেব",
+
+    "উড়িয়ে দিব",
+    "ধ্বংস করে দিব",
+
+    # ---------------- HINDI ----------------
+
+    "maar dunga",
+    "jaan se mar dunga",
+
+    "tujhe mar dunga",
+    "tujhe maar dunga",
+
+    "tujhe khatam kar dunga"
+]
+
+# --------------------------------------------------
+# CYBER / EXPLOIT DETECTION
+# --------------------------------------------------
+
+CYBER_STRONG = [
+
+    # ---------------- ENGLISH ----------------
+
+    "hack the system",
+    "bypass security",
+    "steal data",
+    "exploit vulnerability",
+    "break firewall",
+
+    # ---------------- BANGLISH ----------------
+
+    "system hack korbo",
+    "data churi korbo",
+    "security bypass korbo",
+    "system bhangbo",
+
+    # ---------------- BANGLA ----------------
+
+    "সিস্টেম হ্যাক করবো",
+    "ডাটা চুরি করবো",
+    "সিকিউরিটি ভাঙবো",
+    "সিস্টেম ধ্বংস করবো",
+
+    # ---------------- HINDI ----------------
+
+    "system hack karunga",
+    "data churaunga",
+    "security tod dunga"
+]
+
+# --------------------------------------------------
 # MULTILINGUAL RISK SIGNALS
 # --------------------------------------------------
 
 MULTI_LANG_RISK = {
 
-    # ==================================================
-    # CYBER / EXPLOIT
-    # ==================================================
+    "hack": CYBER_STRONG,
 
-    "hack": [
-
-        # English
-        "hack",
-        "hack the system",
-        "bypass security",
-        "exploit vulnerability",
-        "break firewall",
-        "steal data",
-
-        # variations
-        "haek",
-        "hek",
-        "hax",
-
-        # Banglish
-        "system hack korbo",
-        "security bypass korbo",
-        "data churi korbo",
-        "system bhangbo",
-
-        # Bangla
-        "সিস্টেম হ্যাক করবো",
-        "ডাটা চুরি করবো",
-        "সিকিউরিটি ভাঙবো",
-        "সিস্টেম ধ্বংস করবো",
-
-        # Hindi
-        "system hack karunga",
-        "data churaunga",
-        "security tod dunga"
-    ]
-
-    # ==================================================
-    # VIOLENCE / THREAT
-    # ==================================================
-
-    "violence": [
-
-        # ---------------- ENGLISH ----------------
-
-        "kill",
-        "kill you",
-        "i will kill you",
-        "murder",
-        "murder you",
-        "burn",
-        "destroy you",
-
-        # ---------------- BANGLISH ----------------
-
-        "mere felbo",
-        "khun korbo",
-
-        "shesh kore dibo",
-        "shesh kore debo",
-
-        "toke dekhe nibo",
-
-        "ami toke marbo",
-        "ami tomake mere felbo",
-
-        # ---------------- BANGLA ----------------
-
-        "মেরে ফেলবো",
-        "খুন করবো",
-
-        "শেষ করে দিব",
-        "শেষ করে দেব",
-
-        "উড়িয়ে দিব",
-        "ধ্বংস করে দিব",
-
-        "তোকে দেখে নিব",
-
-        "আমি তোকে মারবো",
-        "আমি তোকে মেরে ফেলবো",
-
-        # ---------------- HINDI ----------------
-
-        "maar dunga",
-        "jaan se mar dunga",
-        "tujhe mar dunga",
-        "tujhe maar dunga",
-        "tujhe khatam kar dunga"
-    ]
+    "violence": VIOLENCE_STRONG
 }
 
 # --------------------------------------------------
