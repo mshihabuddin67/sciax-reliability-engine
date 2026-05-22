@@ -3,7 +3,8 @@ from backend.core.metrics import compute_stability_score
 
 from backend.app.config import (
     VIOLENCE_STRONG,
-    CYBER_STRONG
+    CYBER_STRONG,
+    SAFE_CONTEXTS
 )
 
 # ==================================================
@@ -12,9 +13,9 @@ from backend.app.config import (
 
 def normalize_simple(text: str) -> str:
 
-    text = text.strip()
+    text = text.lower().strip()
 
-    # lightweight normalization (no overkill)
+    # lightweight normalization
     text = text.replace("  ", " ")
 
     return text
@@ -26,7 +27,28 @@ def sciax_engine(prompt):
 
     variants = generate_variants(text)
 
-    stability = compute_stability_score(variants)
+    stability = compute_stability_score(
+        variants
+    )
+
+    # --------------------------------------------------
+    # SAFE CONTEXT CHECK (FIRST PRIORITY)
+    # --------------------------------------------------
+
+    for safe in SAFE_CONTEXTS:
+
+        if safe.lower() in text:
+
+            return {
+
+                "prompt": text,
+
+                "variants": variants,
+
+                "stability_score": 0.92,
+
+                "risk_level": "Low"
+            }
 
     # --------------------------------------------------
     # HARD VIOLENCE CHECK
@@ -34,12 +56,16 @@ def sciax_engine(prompt):
 
     for v in VIOLENCE_STRONG:
 
-        if v in text:
+        if v.lower() in text:
 
             return {
+
                 "prompt": text,
+
                 "variants": variants,
+
                 "stability_score": 0.15,
+
                 "risk_level": "High"
             }
 
@@ -49,12 +75,16 @@ def sciax_engine(prompt):
 
     for c in CYBER_STRONG:
 
-        if c in text:
+        if c.lower() in text:
 
             return {
+
                 "prompt": text,
+
                 "variants": variants,
+
                 "stability_score": 0.25,
+
                 "risk_level": "High"
             }
 
@@ -63,17 +93,27 @@ def sciax_engine(prompt):
     # --------------------------------------------------
 
     if stability > 0.75:
+
         risk = "Low"
 
     elif stability > 0.55:
+
         risk = "Medium"
 
     else:
-        risk = "High"
+
+        risk = "Low"
 
     return {
+
         "prompt": text,
+
         "variants": variants,
-        "stability_score": round(stability, 2),
+
+        "stability_score": round(
+            stability,
+            2
+        ),
+
         "risk_level": risk
-    }
+        }
