@@ -22,71 +22,134 @@ HIGH_RISK_THRESHOLD = 0.75
 MEDIUM_RISK_THRESHOLD = 0.55
 
 # --------------------------------------------------
-# VIOLENCE / THREAT DETECTION
+# SYSTEM MODE
 # --------------------------------------------------
 
-VIOLENCE_STRONG = [
+SYSTEM_MODE = "Hybrid-Light"
+SYSTEM_VERSION = "9.0.0"
 
-    # English
-    "kill you",
-    "i will kill you",
-    "murder you",
-    "destroy you",
-    "burn you",
+# --------------------------------------------------
+# SAFE CONTEXTS
+# --------------------------------------------------
 
-    # Banglish
-    "ami toke marbo",
-    "ami toke mere felbo",
-    "toke khun korbo",
-    "toke shesh kore dibo",
-    "toke dekhe nibo",
+SAFE_CONTEXTS = [
 
-    # Bangla
-    "আমি তোকে মারবো",
-    "আমি তোকে মেরে ফেলবো",
-    "তোকে খুন করবো",
-    "তোকে দেখে নিব",
-    "তোকে শেষ করে দিব",
+    # productivity / self-improvement
+    "hack my sleep schedule",
+    "sleep schedule",
+    "study hack",
+    "life hack",
+    "productivity hack",
 
-    # Hindi
-    "tujhe maar dunga",
-    "tujhe mar dunga",
-    "tujhe khatam kar dunga"
+    # gaming
+    "game strategy",
+    "gaming strategy",
+
+    # harmless expressions
+    "kill time",
+    "destroy boredom"
 ]
 
 # --------------------------------------------------
-# CYBER / EXPLOIT DETECTION
+# MULTILINGUAL RISK SIGNALS
 # --------------------------------------------------
 
-CYBER_STRONG = [
+MULTI_LANG_RISK = {
 
-    # English
-    "hack the system",
-    "bypass security",
-    "steal data",
-    "exploit vulnerability",
-    "break firewall",
+    # ==================================================
+    # CYBER / EXPLOIT
+    # ==================================================
 
-    # Banglish
-    "system hack korbo",
-    "data churi korbo",
-    "security bypass korbo",
-    "system bhangbo",
+    "hack": [
 
-    # Bangla
-    "সিস্টেম হ্যাক করবো",
-    "ডাটা চুরি করবো",
-    "সিকিউরিটি ভাঙবো",
-    "সিস্টেম ধ্বংস করবো",
+        # English
+        "hack",
+        "hack the system",
+        "bypass security",
+        "exploit vulnerability",
+        "break firewall",
+        "steal data",
 
-    # Hindi
-    "system hack karunga",
-    "data churaunga",
-    "security tod dunga"
-]
+        # variations
+        "haek",
+        "hek",
+        "hax",
+
+        # Banglish
+        "system hack korbo",
+        "security bypass korbo",
+        "data churi korbo",
+        "system bhangbo",
+
+        # Bangla
+        "সিস্টেম হ্যাক করবো",
+        "ডাটা চুরি করবো",
+        "সিকিউরিটি ভাঙবো",
+        "সিস্টেম ধ্বংস করবো",
+
+        # Hindi
+        "system hack karunga",
+        "data churaunga",
+        "security tod dunga"
+    ],
+
+    # ==================================================
+    # VIOLENCE / THREAT
+    # ==================================================
+
+    "violence": [
+
+        # ---------------- ENGLISH ----------------
+
+        "kill",
+        "kill you",
+        "i will kill you",
+        "murder",
+        "murder you",
+        "burn",
+        "destroy you",
+
+        # ---------------- BANGLISH ----------------
+
+        "mere felbo",
+        "khun korbo",
+
+        "shesh kore dibo",
+        "shesh kore debo",
+
+        "toke dekhe nibo",
+
+        "ami toke marbo",
+        "ami tomake mere felbo",
+
+        # ---------------- BANGLA ----------------
+
+        "মেরে ফেলবো",
+        "খুন করবো",
+
+        "শেষ করে দিব",
+        "শেষ করে দেব",
+
+        "উড়িয়ে দিব",
+        "ধ্বংস করে দিব",
+
+        "তোকে দেখে নিব",
+
+        "আমি তোকে মারবো",
+        "আমি তোকে মেরে ফেলবো",
+
+        # ---------------- HINDI ----------------
+
+        "maar dunga",
+        "jaan se mar dunga",
+        "tujhe mar dunga",
+        "tujhe maar dunga",
+        "tujhe khatam kar dunga"
+    ]
+}
 
 # --------------------------------------------------
-# BEHAVIOR SIGNALS (LIGHTWEIGHT CONTEXT HELP)
+# LIGHTWEIGHT BEHAVIOR TRIGGERS
 # --------------------------------------------------
 
 BEHAVIOR_TRIGGERS = [
