@@ -1,7 +1,7 @@
 from backend.core.perturbation import generate_variants
 from backend.core.metrics import compute_stability_score
 
-from backend.core.app.config import (
+from backend.app.config import (
     VIOLENCE_STRONG,
     CYBER_STRONG
 )
