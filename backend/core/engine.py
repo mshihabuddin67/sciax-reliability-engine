@@ -8,7 +8,7 @@ from backend.app.config import (
 )
 
 # ==================================================
-# S-CIAX HYBRID ENGINE (STABLE VERSION)
+# S-CIAX HYBRID ENGINE v2 STABLE
 # ==================================================
 
 def normalize_simple(text: str) -> str:
@@ -21,6 +21,51 @@ def normalize_simple(text: str) -> str:
     return text
 
 
+# ==================================================
+# CONFIDENCE CALCULATOR
+# ==================================================
+
+def compute_confidence(
+    risk_level,
+    stability
+):
+
+    # --------------------------------------------------
+    # HIGH RISK
+    # --------------------------------------------------
+
+    if risk_level == "High":
+
+        confidence = 0.90
+
+    # --------------------------------------------------
+    # MEDIUM RISK
+    # --------------------------------------------------
+
+    elif risk_level == "Medium":
+
+        confidence = 0.65
+
+    # --------------------------------------------------
+    # LOW RISK
+    # --------------------------------------------------
+
+    else:
+
+        confidence = 0.35 + (
+            stability * 0.5
+        )
+
+    return round(
+        min(confidence, 0.99),
+        2
+    )
+
+
+# ==================================================
+# MAIN ENGINE
+# ==================================================
+
 def sciax_engine(prompt):
 
     text = normalize_simple(prompt)
@@ -32,12 +77,14 @@ def sciax_engine(prompt):
     )
 
     # --------------------------------------------------
-    # SAFE CONTEXT CHECK (FIRST PRIORITY)
+    # SAFE CONTEXT CHECK
     # --------------------------------------------------
 
     for safe in SAFE_CONTEXTS:
 
         if safe.lower() in text:
+
+            confidence = 0.96
 
             return {
 
@@ -47,7 +94,14 @@ def sciax_engine(prompt):
 
                 "stability_score": 0.92,
 
-                "risk_level": "Low"
+                "risk_level": "Low",
+
+                "confidence_score": confidence,
+
+                "uncertainty_score": round(
+                    1 - confidence,
+                    2
+                )
             }
 
     # --------------------------------------------------
@@ -58,6 +112,8 @@ def sciax_engine(prompt):
 
         if v.lower() in text:
 
+            confidence = 0.91
+
             return {
 
                 "prompt": text,
@@ -66,7 +122,14 @@ def sciax_engine(prompt):
 
                 "stability_score": 0.15,
 
-                "risk_level": "High"
+                "risk_level": "High",
+
+                "confidence_score": confidence,
+
+                "uncertainty_score": round(
+                    1 - confidence,
+                    2
+                )
             }
 
     # --------------------------------------------------
@@ -77,6 +140,8 @@ def sciax_engine(prompt):
 
         if c.lower() in text:
 
+            confidence = 0.88
+
             return {
 
                 "prompt": text,
@@ -85,11 +150,18 @@ def sciax_engine(prompt):
 
                 "stability_score": 0.25,
 
-                "risk_level": "High"
+                "risk_level": "High",
+
+                "confidence_score": confidence,
+
+                "uncertainty_score": round(
+                    1 - confidence,
+                    2
+                )
             }
 
     # --------------------------------------------------
-    # CONTEXT-AWARE DEFAULT LOGIC
+    # DEFAULT CONTEXT-AWARE LOGIC
     # --------------------------------------------------
 
     if stability > 0.75:
@@ -102,7 +174,20 @@ def sciax_engine(prompt):
 
     else:
 
-        risk = "Low"
+        risk = "High"
+
+    # --------------------------------------------------
+    # CONFIDENCE
+    # --------------------------------------------------
+
+    confidence = compute_confidence(
+        risk,
+        stability
+    )
+
+    # --------------------------------------------------
+    # FINAL OUTPUT
+    # --------------------------------------------------
 
     return {
 
@@ -115,5 +200,12 @@ def sciax_engine(prompt):
             2
         ),
 
-        "risk_level": risk
-        }
+        "risk_level": risk,
+
+        "confidence_score": confidence,
+
+        "uncertainty_score": round(
+            1 - confidence,
+            2
+        )
+            }
