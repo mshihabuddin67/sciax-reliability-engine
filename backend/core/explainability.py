@@ -2,86 +2,127 @@ def generate_explanations(text):
 
     explanations = []
 
-    text = text.lower()
+    text = text.lower().strip()
 
-    # --------------------------------------------------
+    # ==================================================
+    # SAFE CONTEXT FIRST (PRIORITY)
+    # ==================================================
+
+    safe_patterns = [
+
+        "sleep schedule",
+        "study hack",
+        "life hack",
+        "productivity hack",
+        "game strategy"
+    ]
+
+    for pattern in safe_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "safe contextual usage detected"
+            )
+
+            return explanations
+
+    # ==================================================
     # VIOLENT INTENT DETECTION
-    # --------------------------------------------------
+    # ==================================================
 
-    if (
-        "kill" in text or
-        "murder" in text or
-        "destroy you" in text or
+    violent_patterns = [
 
-        "mere felbo" in text or
-        "khun korbo" in text or
-        "shesh kore dibo" in text or
-        "shesh kore debo" in text or
+        # English
+        "kill",
+        "murder",
+        "destroy you",
 
-        "আমি তোকে মারবো" in text or
-        "আমি তোমাকে শেষ করে দিব" in text or
-        "মেরে ফেলবো" in text or
-        "খুন করবো" in text or
+        # Banglish
+        "mere felbo",
+        "khun korbo",
+        "shesh kore dibo",
+        "shesh kore debo",
 
-        "mar dunga" in text or
-        "tujhe mar dunga" in text
-    ):
+        # Bangla
+        "শেষ করে দিব",
+        "শেষ করে দেব",
+        "মেরে ফেলবো",
+        "খুন করবো",
 
-        explanations.append(
-            "violent intent structure detected"
-        )
+        # Hindi
+        "mar dunga",
+        "maar dunga",
+        "tujhe mar dunga",
+        "tujhe maar dunga",
+        "tujhe khatam kar dunga"
+    ]
 
-    # --------------------------------------------------
+    for pattern in violent_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "violent intent structure detected"
+            )
+
+            break
+
+    # ==================================================
     # IMPLICIT THREAT ESCALATION
-    # --------------------------------------------------
+    # ==================================================
 
-    if (
-        "toke dekhe nibo" in text or
-        "dekhe nibo" in text or
-        "শেষ করে দিব" in text or
-        "shesh kore dibo" in text
-    ):
+    escalation_patterns = [
 
-        explanations.append(
-            "implicit threat escalation detected"
-        )
+        "toke dekhe nibo",
+        "dekhe nibo",
 
-    # --------------------------------------------------
+        "শেষ করে দিব",
+        "শেষ করে দেব",
+
+        "tujhe dekh lunga",
+        "dekh lunga"
+    ]
+
+    for pattern in escalation_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "implicit threat escalation detected"
+            )
+
+            break
+
+    # ==================================================
     # CYBER ABUSE DETECTION
-    # --------------------------------------------------
+    # ==================================================
 
-    if (
-        "hack" in text or
-        "bypass" in text or
-        "exploit" in text or
+    cyber_patterns = [
 
-        "system hack korbo" in text or
-        "data churi korbo" in text or
-        "steal data" in text
-    ):
+        "hack the system",
+        "bypass security",
+        "exploit vulnerability",
+        "steal data",
+        "breach server",
 
-        explanations.append(
-            "cyber abuse pattern detected"
-        )
+        "system hack korbo",
+        "data churi korbo"
+    ]
 
-    # --------------------------------------------------
-    # SAFE CONTEXT DETECTION
-    # --------------------------------------------------
+    for pattern in cyber_patterns:
 
-    if (
-        "sleep schedule" in text or
-        "study hack" in text or
-        "life hack" in text or
-        "productivity hack" in text
-    ):
+        if pattern in text:
 
-        explanations.append(
-            "safe contextual usage detected"
-        )
+            explanations.append(
+                "cyber abuse pattern detected"
+            )
 
-    # --------------------------------------------------
+            break
+
+    # ==================================================
     # DEFAULT FALLBACK
-    # --------------------------------------------------
+    # ==================================================
 
     if not explanations:
 
