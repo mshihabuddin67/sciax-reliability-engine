@@ -1,3 +1,7 @@
+# ==================================================
+# S-CIAX EXPLAINABILITY ENGINE
+# ==================================================
+
 def generate_explanations(text):
 
     explanations = []
@@ -5,7 +9,7 @@ def generate_explanations(text):
     text = text.lower().strip()
 
     # ==================================================
-    # SAFE CONTEXT FIRST (PRIORITY)
+    # SAFE CONTEXT FIRST (TOP PRIORITY)
     # ==================================================
 
     safe_patterns = [
@@ -28,13 +32,14 @@ def generate_explanations(text):
             return explanations
 
     # ==================================================
-    # VIOLENT INTENT DETECTION
+    # DIRECT VIOLENT PHRASE MATCH
     # ==================================================
 
     violent_patterns = [
 
         # English
         "kill",
+        "kill you",
         "murder",
         "destroy you",
 
@@ -44,7 +49,7 @@ def generate_explanations(text):
         "shesh kore dibo",
         "shesh kore debo",
 
-        # Bangla
+        # Bangla Unicode
         "শেষ করে দিব",
         "শেষ করে দেব",
         "মেরে ফেলবো",
@@ -63,10 +68,39 @@ def generate_explanations(text):
         if pattern in text:
 
             explanations.append(
-                "violent intent structure detected"
+                "direct violent phrase match detected"
             )
 
             break
+
+    # ==================================================
+    # TARGET-DIRECTED AGGRESSION
+    # ==================================================
+
+    target_patterns = [
+
+        "toke",
+        "tomake",
+        "tujhe",
+        "you"
+    ]
+
+    aggression_patterns = [
+
+        "mar",
+        "kill",
+        "destroy",
+        "shesh",
+        "khatam"
+    ]
+
+    if any(t in text for t in target_patterns) and any(
+        a in text for a in aggression_patterns
+    ):
+
+        explanations.append(
+            "target-directed aggression identified"
+        )
 
     # ==================================================
     # IMPLICIT THREAT ESCALATION
@@ -81,7 +115,10 @@ def generate_explanations(text):
         "শেষ করে দেব",
 
         "tujhe dekh lunga",
-        "dekh lunga"
+        "dekh lunga",
+
+        "shesh kore dibo",
+        "shesh kore debo"
     ]
 
     for pattern in escalation_patterns:
@@ -90,6 +127,28 @@ def generate_explanations(text):
 
             explanations.append(
                 "implicit threat escalation detected"
+            )
+
+            break
+
+    # ==================================================
+    # MULTILINGUAL THREAT STRUCTURE
+    # ==================================================
+
+    multilingual_patterns = [
+
+        "mar dunga",
+        "mere felbo",
+        "shesh kore dibo",
+        "শেষ করে দিব"
+    ]
+
+    for pattern in multilingual_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "multilingual violent intent structure detected"
             )
 
             break
@@ -121,6 +180,29 @@ def generate_explanations(text):
             break
 
     # ==================================================
+    # FIRST-PERSON THREAT LANGUAGE
+    # ==================================================
+
+    first_person_patterns = [
+
+        "i will",
+        "ami",
+        "mar dunga",
+        "mere felbo",
+        "shesh kore dibo"
+    ]
+
+    for pattern in first_person_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "first-person threat language detected"
+            )
+
+            break
+
+    # ==================================================
     # DEFAULT FALLBACK
     # ==================================================
 
@@ -129,5 +211,13 @@ def generate_explanations(text):
         explanations.append(
             "normal interaction pattern detected"
         )
+
+    # ==================================================
+    # REMOVE DUPLICATES
+    # ==================================================
+
+    explanations = list(
+        dict.fromkeys(explanations)
+    )
 
     return explanations
