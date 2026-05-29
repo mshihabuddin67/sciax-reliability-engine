@@ -9,19 +9,67 @@ from backend.app.config import (
     SYSTEM_VERSION
 )
 
-app = FastAPI()
+# ==================================================
+# S-CIAX APPLICATION
+# ==================================================
 
-app.include_router(analyze_route)
+app = FastAPI(
 
+    title="S-CIAX",
+
+    description=(
+        "Signal Classification & "
+        "Risk Analysis Engine"
+    ),
+
+    version=SYSTEM_VERSION
+)
+
+# ==================================================
+# ROUTES
+# ==================================================
+
+app.include_router(
+    analyze_route
+)
+
+# ==================================================
+# ROOT STATUS ENDPOINT
+# ==================================================
 
 @app.get("/")
 def home():
 
     return {
 
-        "status": "S-CIAX Running",
+        "status":
+            "S-CIAX Running",
 
-        "mode": SYSTEM_MODE,
+        "system_mode":
+            SYSTEM_MODE,
 
-        "version": SYSTEM_VERSION
+        "system_version":
+            SYSTEM_VERSION,
+
+        "engine_type":
+            "Hybrid Explainable Moderation Engine"
+    }
+
+# ==================================================
+# HEALTH CHECK
+# ==================================================
+
+@app.get("/health")
+def health_check():
+
+    return {
+
+        "status":
+            "healthy",
+
+        "service":
+            "S-CIAX",
+
+        "version":
+            SYSTEM_VERSION
     }
