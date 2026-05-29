@@ -18,7 +18,7 @@ def build_response(
 ):
 
     # --------------------------------------------------
-    # SAFE ACCESS TO ANALYSIS BLOCK
+    # SAFE ANALYSIS ACCESS
     # --------------------------------------------------
 
     analysis = engine_output.get(
@@ -52,12 +52,28 @@ def build_response(
         action = "allow"
 
     # --------------------------------------------------
+    # CLEAN ENGINE OUTPUT
+    # --------------------------------------------------
+
+    clean_engine_output = {
+
+        "prompt":
+            engine_output.get(
+                "prompt"
+            ),
+
+        "analysis":
+            analysis
+    }
+
+    # --------------------------------------------------
     # FINAL RESPONSE
     # --------------------------------------------------
 
     return {
 
-        "input": input_text,
+        "input":
+            input_text,
 
         "language_profile":
             language_profile,
@@ -69,7 +85,7 @@ def build_response(
             intent_classification,
 
         "engine_output":
-            engine_output,
+            clean_engine_output,
 
         "risk_assessment": {
 
