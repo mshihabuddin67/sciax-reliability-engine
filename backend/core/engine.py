@@ -8,7 +8,7 @@ from backend.app.config import (
 )
 
 # ==================================================
-# S-CIAX HYBRID ENGINE v2 STABLE
+# S-CIAX HYBRID ENGINE v3 STABLE
 # ==================================================
 
 def normalize_simple(text: str) -> str:
@@ -63,6 +63,34 @@ def compute_confidence(
 
 
 # ==================================================
+# ANALYSIS BUILDER
+# ==================================================
+
+def build_analysis(
+    stability,
+    risk,
+    confidence
+):
+
+    return {
+
+        "stability_score": round(
+            stability,
+            2
+        ),
+
+        "risk_level": risk,
+
+        "confidence_score": confidence,
+
+        "uncertainty_score": round(
+            1 - confidence,
+            2
+        )
+    }
+
+
+# ==================================================
 # MAIN ENGINE
 # ==================================================
 
@@ -92,15 +120,10 @@ def sciax_engine(prompt):
 
                 "variants": variants,
 
-                "stability_score": 0.92,
-
-                "risk_level": "Low",
-
-                "confidence_score": confidence,
-
-                "uncertainty_score": round(
-                    1 - confidence,
-                    2
+                "analysis": build_analysis(
+                    0.92,
+                    "Low",
+                    confidence
                 )
             }
 
@@ -120,15 +143,10 @@ def sciax_engine(prompt):
 
                 "variants": variants,
 
-                "stability_score": 0.15,
-
-                "risk_level": "High",
-
-                "confidence_score": confidence,
-
-                "uncertainty_score": round(
-                    1 - confidence,
-                    2
+                "analysis": build_analysis(
+                    0.15,
+                    "High",
+                    confidence
                 )
             }
 
@@ -148,15 +166,10 @@ def sciax_engine(prompt):
 
                 "variants": variants,
 
-                "stability_score": 0.25,
-
-                "risk_level": "High",
-
-                "confidence_score": confidence,
-
-                "uncertainty_score": round(
-                    1 - confidence,
-                    2
+                "analysis": build_analysis(
+                    0.25,
+                    "High",
+                    confidence
                 )
             }
 
@@ -195,17 +208,9 @@ def sciax_engine(prompt):
 
         "variants": variants,
 
-        "stability_score": round(
+        "analysis": build_analysis(
             stability,
-            2
-        ),
-
-        "risk_level": risk,
-
-        "confidence_score": confidence,
-
-        "uncertainty_score": round(
-            1 - confidence,
-            2
+            risk,
+            confidence
         )
             }
