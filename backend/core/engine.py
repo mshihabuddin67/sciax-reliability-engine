@@ -1,5 +1,6 @@
 from backend.core.perturbation import generate_variants
 from backend.core.metrics import compute_stability_score
+from backend.core.fuzzy import best_fuzzy_match
 
 from backend.app.config import (
     VIOLENCE_STRONG,
@@ -149,7 +150,49 @@ def sciax_engine(prompt):
                     confidence
                 )
             }
+    
+    # --------------------------------------------------
+    # FUZZY VIOLENCE CHECK
+    # --------------------------------------------------
 
+    match, score = best_fuzzy_match(
+        text,
+        VIOLENCE_STRONG,
+        threshold=0.82
+    )
+
+    if match:
+
+        confidence = 0.89
+
+        return {
+
+            "prompt": text,
+
+            "variants": variants,
+
+            "analysis": {
+
+                "stability_score": 0.20,
+
+                "risk_level": "High",
+
+                "confidence_score": confidence,
+
+                "uncertainty_score": round(
+                    1 - confidence,
+                    2
+                )
+            },
+
+            "fuzzy_match": {
+
+                "matched_pattern": match,
+
+                "similarity_score": score
+            }
+        }
+    
     # --------------------------------------------------
     # CYBER RISK CHECK
     # --------------------------------------------------
