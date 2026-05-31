@@ -9,16 +9,21 @@ def detect_behavioral_signals(text):
     signals = []
 
     # --------------------------------------------------
-    # TARGET-DIRECTED HOSTILITY
+    # TARGET-DIRECTED AGGRESSION
     # --------------------------------------------------
 
     if any(p in text for p in [
 
-        "dekhe nibo",
         "toke",
         "tomake",
+        "tore",
+
         "tujhe",
-        "you"
+        "tumhe",
+
+        "kill you",
+        "i will kill you",
+        "destroy you"
 
     ]):
 
@@ -33,9 +38,12 @@ def detect_behavioral_signals(text):
     if any(p in text for p in [
 
         "dekhe nibo",
+
         "shesh kore dibo",
         "shesh kore debo",
+
         "khatam kar dunga",
+        "dekh lunga",
 
         "শেষ করে দিব",
         "শেষ করে দেব"
@@ -52,10 +60,15 @@ def detect_behavioral_signals(text):
 
     if any(p in text for p in [
 
-        "kill",
+        "kill you",
+        "i will kill",
         "murder",
+        "destroy you",
+
         "mar dunga",
         "maar dunga",
+        "tujhe mar dunga",
+        "tujhe maar dunga",
 
         "mere felbo",
         "khun korbo",
@@ -77,9 +90,14 @@ def detect_behavioral_signals(text):
 
         "ami",
         "i will",
+
         "mar dunga",
+        "maar dunga",
+
         "mere felbo",
-        "shesh kore dibo"
+
+        "shesh kore dibo",
+        "shesh kore debo"
 
     ]):
 
@@ -97,6 +115,7 @@ def detect_behavioral_signals(text):
         "bypass security",
         "exploit vulnerability",
         "steal data",
+        "breach server",
 
         "system hack korbo",
         "data churi korbo"
@@ -116,7 +135,8 @@ def detect_behavioral_signals(text):
         "hack my sleep schedule",
         "study hack",
         "life hack",
-        "productivity hack"
+        "productivity hack",
+        "game strategy"
 
     ]):
 
@@ -125,9 +145,11 @@ def detect_behavioral_signals(text):
         )
 
     # --------------------------------------------------
-    # REMOVE DUPLICATES
+    # REMOVE DUPLICATES (KEEP ORDER)
     # --------------------------------------------------
 
-    signals = list(set(signals))
+    signals = list(
+        dict.fromkeys(signals)
+    )
 
     return signals
