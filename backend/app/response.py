@@ -5,16 +5,12 @@
 def build_response(
 
     input_text,
-
     engine_output,
-
     behavioral_signals,
-
     intent_classification,
-
     language_profile,
-
     explainability
+
 ):
 
     # --------------------------------------------------
@@ -25,10 +21,6 @@ def build_response(
         "analysis",
         {}
     )
-
-    # --------------------------------------------------
-    # RISK LEVEL
-    # --------------------------------------------------
 
     risk_level = analysis.get(
         "risk_level",
@@ -52,19 +44,20 @@ def build_response(
         action = "allow"
 
     # --------------------------------------------------
-    # CLEAN ENGINE OUTPUT
+    # REMOVE DUPLICATES
     # --------------------------------------------------
 
-    clean_engine_output = {
+    behavioral_signals = list(
+        dict.fromkeys(behavioral_signals)
+    )
 
-        "prompt":
-            engine_output.get(
-                "prompt"
-            ),
+    intent_classification = list(
+        dict.fromkeys(intent_classification)
+    )
 
-        "analysis":
-            analysis
-    }
+    explainability = list(
+        dict.fromkeys(explainability)
+    )
 
     # --------------------------------------------------
     # FINAL RESPONSE
@@ -72,8 +65,7 @@ def build_response(
 
     return {
 
-        "input":
-            input_text,
+        "input": input_text,
 
         "language_profile":
             language_profile,
@@ -84,9 +76,6 @@ def build_response(
         "intent_classification":
             intent_classification,
 
-        "engine_output":
-            clean_engine_output,
-
         "risk_assessment": {
 
             "level":
@@ -95,19 +84,19 @@ def build_response(
             "stability_score":
                 analysis.get(
                     "stability_score",
-                    0.5
+                    0.50
                 ),
 
             "confidence_score":
                 analysis.get(
                     "confidence_score",
-                    0.5
+                    0.50
                 ),
 
             "uncertainty_score":
                 analysis.get(
                     "uncertainty_score",
-                    0.5
+                    0.50
                 )
         },
 
