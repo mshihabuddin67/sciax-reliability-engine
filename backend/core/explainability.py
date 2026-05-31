@@ -2,7 +2,10 @@
 # S-CIAX EXPLAINABILITY ENGINE
 # ==================================================
 
-def generate_explanations(text):
+def generate_explanations(
+    text,
+    normalization_applied=False
+):
 
     explanations = []
 
@@ -38,24 +41,24 @@ def generate_explanations(text):
     violent_patterns = [
 
         # English
-        "kill",
         "kill you",
+        "i will kill",
         "murder",
         "destroy you",
 
-        # Banglish
+        # Romanized Bangla
         "mere felbo",
         "khun korbo",
         "shesh kore dibo",
         "shesh kore debo",
 
-        # Bangla Unicode
+        # Bangla
         "শেষ করে দিব",
         "শেষ করে দেব",
         "মেরে ফেলবো",
         "খুন করবো",
 
-        # Hindi
+        # Roman Hindi
         "mar dunga",
         "maar dunga",
         "tujhe mar dunga",
@@ -81,8 +84,13 @@ def generate_explanations(text):
 
         "toke",
         "tomake",
+        "tore",
+
         "tujhe",
-        "you"
+        "tumhe",
+
+        "kill you",
+        "destroy you"
     ]
 
     aggression_patterns = [
@@ -91,11 +99,16 @@ def generate_explanations(text):
         "kill",
         "destroy",
         "shesh",
-        "khatam"
+        "khatam",
+        "khun"
     ]
 
-    if any(t in text for t in target_patterns) and any(
-        a in text for a in aggression_patterns
+    if any(
+        t in text
+        for t in target_patterns
+    ) and any(
+        a in text
+        for a in aggression_patterns
     ):
 
         explanations.append(
@@ -114,11 +127,11 @@ def generate_explanations(text):
         "শেষ করে দিব",
         "শেষ করে দেব",
 
-        "tujhe dekh lunga",
-        "dekh lunga",
-
         "shesh kore dibo",
-        "shesh kore debo"
+        "shesh kore debo",
+
+        "tujhe dekh lunga",
+        "dekh lunga"
     ]
 
     for pattern in escalation_patterns:
@@ -177,6 +190,10 @@ def generate_explanations(text):
                 "cyber abuse pattern detected"
             )
 
+            explanations.append(
+                "malicious system access intent detected"
+            )
+
             break
 
     # ==================================================
@@ -187,9 +204,14 @@ def generate_explanations(text):
 
         "i will",
         "ami",
+
         "mar dunga",
+        "maar dunga",
+
         "mere felbo",
-        "shesh kore dibo"
+
+        "shesh kore dibo",
+        "shesh kore debo"
     ]
 
     for pattern in first_person_patterns:
@@ -203,6 +225,16 @@ def generate_explanations(text):
             break
 
     # ==================================================
+    # NORMALIZATION APPLIED
+    # ==================================================
+
+    if normalization_applied:
+
+        explanations.append(
+            "normalization match applied"
+        )
+
+    # ==================================================
     # DEFAULT FALLBACK
     # ==================================================
 
@@ -213,7 +245,7 @@ def generate_explanations(text):
         )
 
     # ==================================================
-    # REMOVE DUPLICATES
+    # REMOVE DUPLICATES (KEEP ORDER)
     # ==================================================
 
     explanations = list(
