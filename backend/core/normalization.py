@@ -6,7 +6,7 @@ def normalize_text(text):
     text = text.lower().strip()
 
     # ----------------------------------
-    # Character substitutions
+    # SYMBOL → LETTER SUBSTITUTION
     # ----------------------------------
 
     replacements = {
@@ -22,25 +22,17 @@ def normalize_text(text):
     }
 
     for old, new in replacements.items():
-
-        text = text.replace(
-            old,
-            new
-        )
+        text = text.replace(old, new)
 
     # ----------------------------------
-    # Remove repeated chars
-    # e.g. maaaarbo -> marbo
+    # REMOVE EXTRA REPETITIONS
+    # e.g. maaaaarbo → marbo
     # ----------------------------------
 
-    text = re.sub(
-        r"(.)\1{2,}",
-        r"\1",
-        text
-    )
+    text = re.sub(r"(.)\1{2,}", r"\1", text)
 
     # ----------------------------------
-    # Remove special chars
+    # REMOVE SPECIAL CHARACTERS
     # ----------------------------------
 
     text = re.sub(
@@ -50,17 +42,13 @@ def normalize_text(text):
     )
 
     # ----------------------------------
-    # Normalize spacing
+    # NORMALIZE WHITESPACE
     # ----------------------------------
 
-    text = re.sub(
-        r"\s+",
-        " ",
-        text
-    ).strip()
+    text = re.sub(r"\s+", " ", text).strip()
 
     # ----------------------------------
-    # Reconstruct fragmented words
+    # WORD RECONSTRUCTION (FRAGMENTED TEXT)
     # ----------------------------------
 
     reconstructions = {
@@ -70,39 +58,42 @@ def normalize_text(text):
         "m a r d u n g a": "mar dunga",
 
         "s h e s h": "shesh",
-        "s e s h": "sesh",
+        "s e s h": "shesh",
 
         "d i b o": "dibo",
         "d e b o": "debo",
 
         "t o k e": "toke",
-        "t o m a k e": "tomake"
+        "t o m a k e": "tomake",
+
+        "d e k h e": "dekhe",
+        "n i b o": "nibo"
     }
 
     for old, new in reconstructions.items():
-
-        text = text.replace(
-            old,
-            new
-        )
+        text = text.replace(old, new)
 
     # ----------------------------------
-    # Romanized Bangla fixes
+    # ROMANIZED BANGLA NORMALIZATION FIXES
     # ----------------------------------
 
-    text = text.replace(
-        "koredibo",
-        "kore dibo"
-    )
+    fixes = {
 
-    text = text.replace(
-        "koredebo",
-        "kore debo"
-    )
+        "koredibo": "kore dibo",
+        "koredebo": "kore debo",
+        "sheshkore": "shesh kore",
+        "dekhenibo": "dekhe nibo",
+        "marboi": "marbo",
+        "marbooo": "marbo"
+    }
 
-    text = text.replace(
-        "sheshkore",
-        "shesh kore"
-    )
+    for old, new in fixes.items():
+        text = text.replace(old, new)
+
+    # ----------------------------------
+    # FINAL CLEANUP
+    # ----------------------------------
+
+    text = re.sub(r"\s+", " ", text).strip()
 
     return text
