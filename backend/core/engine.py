@@ -63,76 +63,69 @@ def build_analysis(
 def sciax_engine(prompt):
 
     text = normalize_simple(prompt)
-    signals = detect_behavioral_signals(
-    text
-)
 
-signal_count = len(signals)
+    # -----------------------------
+    # SIGNALS
+    # -----------------------------
+    signals = detect_behavioral_signals(text)
+    signal_count = len(signals)
 
+    # -----------------------------
+    # VARIANTS + STABILITY
+    # -----------------------------
     variants = generate_variants(text)
 
-    stability = compute_stability_score(
-        variants
-    )
+    stability = compute_stability_score(variants)
 
-    # --------------------------------------------------
+    # -----------------------------
     # SAFE CONTEXT CHECK
-    # --------------------------------------------------
-
+    # -----------------------------
     for safe in SAFE_CONTEXTS:
 
         if safe.lower() in text:
 
             confidence = calculate_confidence(
-    stability=0.92,
-    behavioral_signals_count=0,
-    strong_match=False
+                stability=stability,
+                behavioral_signals_count=0,
+                strong_match=False
             )
 
             return {
-
                 "prompt": text,
-
                 "variants": variants,
-
                 "analysis": build_analysis(
-                    0.92,
+                    stability,
                     "Low",
                     confidence
                 )
             }
 
-    # --------------------------------------------------
+    # -----------------------------
     # HARD VIOLENCE CHECK
-    # --------------------------------------------------
-
+    # -----------------------------
     for v in VIOLENCE_STRONG:
 
         if v.lower() in text:
 
             confidence = calculate_confidence(
-    stability=0.15,
-    behavioral_signals_count=signal_count,
-    strong_match=True
+                stability=0.15,
+                behavioral_signals_count=signal_count,
+                strong_match=True
             )
 
             return {
-
                 "prompt": text,
-
                 "variants": variants,
-
                 "analysis": build_analysis(
                     0.15,
                     "High",
                     confidence
                 )
             }
-    
-    # --------------------------------------------------
-    # FUZZY VIOLENCE CHECK
-    # --------------------------------------------------
 
+    # -----------------------------
+    # FUZZY CHECK
+    # -----------------------------
     match, score = best_fuzzy_match(
         text,
         VIOLENCE_STRONG,
@@ -142,59 +135,42 @@ signal_count = len(signals)
     if match:
 
         confidence = calculate_confidence(
-    stability=0.20,
-    behavioral_signals_count=signal_count,
-    fuzzy_score=score
+            stability=0.20,
+            behavioral_signals_count=signal_count,
+            fuzzy_score=score
         )
 
         return {
-
             "prompt": text,
-
             "variants": variants,
-
             "analysis": {
-
                 "stability_score": 0.20,
-
                 "risk_level": "High",
-
                 "confidence_score": confidence,
-
-                "uncertainty_score": round(
-                    1 - confidence,
-                    2
-                )
+                "uncertainty_score": round(1 - confidence, 2)
             },
-
             "fuzzy_match": {
-
                 "matched_pattern": match,
-
                 "similarity_score": score
             }
         }
-    
-    # --------------------------------------------------
-    # CYBER RISK CHECK
-    # --------------------------------------------------
 
+    # -----------------------------
+    # CYBER CHECK
+    # -----------------------------
     for c in CYBER_STRONG:
 
         if c.lower() in text:
 
             confidence = calculate_confidence(
-    stability=0.25,
-    behavioral_signals_count=signal_count,
-    strong_match=True
+                stability=0.25,
+                behavioral_signals_count=signal_count,
+                strong_match=True
             )
 
             return {
-
                 "prompt": text,
-
                 "variants": variants,
-
                 "analysis": build_analysis(
                     0.25,
                     "High",
@@ -202,21 +178,30 @@ signal_count = len(signals)
                 )
             }
 
-    # --------------------------------------------------
-    # DEFAULT CONTEXT-AWARE LOGIC
-    # --------------------------------------------------
-
+    # -----------------------------
+    # DEFAULT
+    # -----------------------------
     if stability > 0.75:
-
         risk = "Low"
-
     elif stability > 0.55:
-
         risk = "Medium"
-
     else:
-
         risk = "High"
+
+    confidence = calculate_confidence(
+        stability=stability,
+        behavioral_signals_count=signal_count
+    )
+
+    return {
+        "prompt": text,
+        "variants": variants,
+        "analysis": build_analysis(
+            stability,
+            risk,
+            confidence
+        )
+    }
 
     # --------------------------------------------------
     # CONFIDENCE
