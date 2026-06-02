@@ -74,7 +74,6 @@ def sciax_engine(prompt):
     # VARIANTS + STABILITY
     # -----------------------------
     variants = generate_variants(text)
-
     stability = compute_stability_score(variants)
 
     # -----------------------------
@@ -87,7 +86,8 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=0,
-                strong_match=False
+                strong_match=False,
+                signals=signals
             )
 
             return {
@@ -110,7 +110,8 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=0.15,
                 behavioral_signals_count=signal_count,
-                strong_match=True
+                strong_match=True,
+                signals=signals
             )
 
             return {
@@ -137,18 +138,18 @@ def sciax_engine(prompt):
         confidence = calculate_confidence(
             stability=0.20,
             behavioral_signals_count=signal_count,
-            fuzzy_score=score
+            fuzzy_score=score,
+            signals=signals
         )
 
         return {
             "prompt": text,
             "variants": variants,
-            "analysis": {
-                "stability_score": 0.20,
-                "risk_level": "High",
-                "confidence_score": confidence,
-                "uncertainty_score": round(1 - confidence, 2)
-            },
+            "analysis": build_analysis(
+                0.20,
+                "High",
+                confidence
+            ),
             "fuzzy_match": {
                 "matched_pattern": match,
                 "similarity_score": score
@@ -165,7 +166,8 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=0.25,
                 behavioral_signals_count=signal_count,
-                strong_match=True
+                strong_match=True,
+                signals=signals
             )
 
             return {
@@ -179,7 +181,7 @@ def sciax_engine(prompt):
             }
 
     # -----------------------------
-    # DEFAULT
+    # DEFAULT LOGIC
     # -----------------------------
     if stability > 0.75:
         risk = "Low"
@@ -188,9 +190,13 @@ def sciax_engine(prompt):
     else:
         risk = "High"
 
+    # -----------------------------
+    # FINAL CONFIDENCE (WITH WEIGHTS)
+    # -----------------------------
     confidence = calculate_confidence(
         stability=stability,
-        behavioral_signals_count=signal_count
+        behavioral_signals_count=signal_count,
+        signals=signals
     )
 
     return {
@@ -201,7 +207,7 @@ def sciax_engine(prompt):
             risk,
             confidence
         )
-    }
+            }
 
     # --------------------------------------------------
     # CONFIDENCE
