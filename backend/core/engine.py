@@ -29,7 +29,7 @@ def build_analysis(stability, risk, confidence):
         "stability_score": round(stability, 2),
         "risk_level": risk,
         "confidence_score": confidence,
-        "uncertainty_score": round(1 - confidence, 2)
+        "uncertainty_score": round(1 - confidence, 2),
     }
 
 
@@ -65,7 +65,8 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=0,
-                strong_match=False
+                strong_match=False,
+                safe_override=True
             
             )
 
