@@ -1,63 +1,36 @@
-# ==================================================
-# CONFIDENCE ENGINE
-# ==================================================
-
 def calculate_confidence(
     stability,
     behavioral_signals_count=0,
     fuzzy_score=0.0,
-    strong_match=False
+    strong_match=False,
+    safe_override=False
 ):
-    """
-    Dynamic confidence scoring.
-    """
 
+    # normalize stability
+    stability = max(0.0, min(stability, 1.0))
+
+    # ==================================================
+    # SAFE OVERRIDE
+    # ==================================================
+    if safe_override:
+        confidence = min(0.95, 0.85 + stability * 0.1)
+        return round(confidence, 2)
+
+    # ==================================================
+    # BASE
+    # ==================================================
     confidence = 0.30
 
-    # stability contribution
-    confidence += stability * 0.20
+    confidence += stability * 0.25
 
-    # behavioral signals contribution
-    confidence += (
-        behavioral_signals_count * 0.10
-    )
+    # safer penalty cap
+    confidence -= min(0.25, behavioral_signals_count * 0.06)
 
-    # fuzzy similarity contribution
-    confidence += (
-        fuzzy_score * 0.20
-    )
+    confidence += fuzzy_score * 0.20
 
-    # strong match boost
     if strong_match:
-        confidence += 0.25
+        confidence += 0.20
 
-    return calibrate_confidence(
-        confidence
-    )
+    confidence = max(0.05, min(confidence, 0.98))
 
-
-def calibrate_confidence(raw_score):
-    """
-    Normalize confidence score.
-    """
-
-    raw_score = min(
-        raw_score,
-        0.99
-    )
-
-    return round(
-        raw_score,
-        2
-    )
-
-
-def calculate_uncertainty(confidence):
-    """
-    Uncertainty is inverse confidence.
-    """
-
-    return round(
-        1 - confidence,
-        2
-    )
+    return round(confidence, 2)
