@@ -27,9 +27,7 @@ def detect_behavioral_signals(text):
 
     ]):
 
-        signals.append(
-            "target-directed aggression"
-        )
+        signals.append("target-directed aggression")
 
     # --------------------------------------------------
     # IMPLICIT THREAT ESCALATION
@@ -50,9 +48,7 @@ def detect_behavioral_signals(text):
 
     ]):
 
-        signals.append(
-            "implicit threat escalation"
-        )
+        signals.append("implicit threat escalation")
 
     # --------------------------------------------------
     # DIRECT VIOLENT AGGRESSION
@@ -78,9 +74,7 @@ def detect_behavioral_signals(text):
 
     ]):
 
-        signals.append(
-            "violent aggression"
-        )
+        signals.append("violent aggression")
 
     # --------------------------------------------------
     # FIRST-PERSON THREAT LANGUAGE
@@ -101,9 +95,7 @@ def detect_behavioral_signals(text):
 
     ]):
 
-        signals.append(
-            "first-person threat language"
-        )
+        signals.append("first-person threat language")
 
     # --------------------------------------------------
     # CYBER INTRUSION
@@ -122,9 +114,7 @@ def detect_behavioral_signals(text):
 
     ]):
 
-        signals.append(
-            "cyber intrusion intent"
-        )
+        signals.append("cyber intrusion intent")
 
     # --------------------------------------------------
     # SAFE / BENIGN CONTEXT
@@ -140,16 +130,92 @@ def detect_behavioral_signals(text):
 
     ]):
 
-        signals.append(
-            "benign optimization context"
-        )
+        signals.append("benign optimization context")
+
+    # --------------------------------------------------
+    # FRAUD INTENT
+    # --------------------------------------------------
+
+    if any(p in text for p in [
+
+        "otp dao",
+        "send otp",
+        "bank password",
+        "credit card pin",
+        "verification code"
+
+    ]):
+
+        signals.append("fraud intent")
+
+    # --------------------------------------------------
+    # SOCIAL ENGINEERING
+    # --------------------------------------------------
+
+    if any(p in text for p in [
+
+        "pretend to be",
+        "impersonate",
+        "fake identity",
+        "act as support",
+        "pose as"
+
+    ]):
+
+        signals.append("social engineering")
+
+    # --------------------------------------------------
+    # CREDENTIAL THEFT
+    # --------------------------------------------------
+
+    if any(p in text for p in [
+
+        "steal password",
+        "get password",
+        "steal credentials",
+        "login credentials",
+        "account password"
+
+    ]):
+
+        signals.append("credential theft")
+
+    # --------------------------------------------------
+    # HARASSMENT
+    # --------------------------------------------------
+
+    if any(p in text for p in [
+
+        "harass",
+        "bully",
+        "keep bothering",
+        "insult repeatedly",
+        "target repeatedly"
+
+    ]):
+
+        signals.append("harassment")
+
+    # --------------------------------------------------
+    # COERCION
+    # --------------------------------------------------
+
+    if any(p in text for p in [
+
+        "force you",
+        "make you do",
+        "threaten until",
+        "pressure you",
+        "compel you"
+
+    ]):
+
+        signals.append("coercion")
 
     # --------------------------------------------------
     # REMOVE DUPLICATES (KEEP ORDER)
     # --------------------------------------------------
 
-    signals = list(
-        dict.fromkeys(signals)
-    )
+    signals = list(dict.fromkeys(signals))
 
     return signals
