@@ -66,7 +66,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 behavioral_signals_count=0,
                 strong_match=False,
-                signals=signals
+            
             )
 
             return {
@@ -92,7 +92,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 behavioral_signals_count=signal_count,
                 strong_match=True,
-                signals=signals
+                
             )
 
             return {
@@ -120,7 +120,7 @@ def sciax_engine(prompt):
             stability=0.20,
             behavioral_signals_count=signal_count,
             fuzzy_score=score,
-            signals=signals
+            
         )
 
         return {
@@ -150,7 +150,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 behavioral_signals_count=signal_count,
                 strong_match=True,
-                signals=signals
+                
             )
 
             return {
@@ -176,7 +176,7 @@ def sciax_engine(prompt):
     confidence = calculate_confidence(
         stability=stability,
         behavioral_signals_count=signal_count,
-        signals=signals
+        
     )
 
     return {
