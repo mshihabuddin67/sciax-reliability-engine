@@ -1,6 +1,13 @@
 from backend.core.perturbation import generate_variants
 from backend.core.metrics import compute_stability_score
 from backend.core.fuzzy import best_fuzzy_match
+from backend.core.behavioral_signals import (
+    detect_behavioral_signals
+)
+
+from backend.core.confidence import (
+    calculate_confidence
+)
 
 from backend.app.config import (
     VIOLENCE_STRONG,
@@ -20,48 +27,6 @@ def normalize_simple(text: str) -> str:
     text = text.replace("  ", " ")
 
     return text
-
-
-# ==================================================
-# CONFIDENCE CALCULATOR
-# ==================================================
-
-def compute_confidence(
-    risk_level,
-    stability
-):
-
-    # --------------------------------------------------
-    # HIGH RISK
-    # --------------------------------------------------
-
-    if risk_level == "High":
-
-        confidence = 0.90
-
-    # --------------------------------------------------
-    # MEDIUM RISK
-    # --------------------------------------------------
-
-    elif risk_level == "Medium":
-
-        confidence = 0.65
-
-    # --------------------------------------------------
-    # LOW RISK
-    # --------------------------------------------------
-
-    else:
-
-        confidence = 0.35 + (
-            stability * 0.5
-        )
-
-    return round(
-        min(confidence, 0.99),
-        2
-    )
-
 
 # ==================================================
 # ANALYSIS BUILDER
@@ -98,6 +63,11 @@ def build_analysis(
 def sciax_engine(prompt):
 
     text = normalize_simple(prompt)
+    signals = detect_behavioral_signals(
+    text
+)
+
+signal_count = len(signals)
 
     variants = generate_variants(text)
 
@@ -113,7 +83,11 @@ def sciax_engine(prompt):
 
         if safe.lower() in text:
 
-            confidence = 0.96
+            confidence = calculate_confidence(
+    stability=0.92,
+    behavioral_signals_count=0,
+    strong_match=False
+            )
 
             return {
 
@@ -136,7 +110,11 @@ def sciax_engine(prompt):
 
         if v.lower() in text:
 
-            confidence = 0.91
+            confidence = calculate_confidence(
+    stability=0.15,
+    behavioral_signals_count=signal_count,
+    strong_match=True
+            )
 
             return {
 
@@ -163,7 +141,11 @@ def sciax_engine(prompt):
 
     if match:
 
-        confidence = 0.89
+        confidence = calculate_confidence(
+    stability=0.20,
+    behavioral_signals_count=signal_count,
+    fuzzy_score=score
+        )
 
         return {
 
@@ -201,7 +183,11 @@ def sciax_engine(prompt):
 
         if c.lower() in text:
 
-            confidence = 0.88
+            confidence = calculate_confidence(
+    stability=0.25,
+    behavioral_signals_count=signal_count,
+    strong_match=True
+            )
 
             return {
 
@@ -236,9 +222,9 @@ def sciax_engine(prompt):
     # CONFIDENCE
     # --------------------------------------------------
 
-    confidence = compute_confidence(
-        risk,
-        stability
+    confidence = calculate_confidence(
+    stability=stability,
+    behavioral_signals_count=signal_count
     )
 
     # --------------------------------------------------
