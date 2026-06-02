@@ -4,17 +4,27 @@
 
 SIGNAL_WEIGHTS = {
 
-    "violent aggression": 0.15,
+    "violent aggression": 0.30,
 
-    "cyber intrusion intent": 0.15,
+    "cyber intrusion intent": 0.25,
 
-    "target-directed aggression": 0.10,
+    "fraud intent": 0.22,
+
+    "credential theft": 0.22,
+
+    "social engineering": 0.20,
+
+    "coercion": 0.18,
+
+    "harassment": 0.15,
+
+    "target-directed aggression": 0.12,
 
     "first-person threat language": 0.10,
 
     "implicit threat escalation": 0.08,
 
-    "benign optimization context": -0.10
+    "benign optimization context": -0.25
 }
 
 
