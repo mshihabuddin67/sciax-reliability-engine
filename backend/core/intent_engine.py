@@ -55,6 +55,71 @@ def classify_intent(text):
     ]
 
     # --------------------------------------------------
+    # SOCIAL ENGINEERING
+    # --------------------------------------------------
+
+    social_patterns = [
+
+        "fake identity",
+        "pretend to be",
+        "impersonate",
+        "pose as",
+        "act as support"
+    ]
+
+    # --------------------------------------------------
+    # CREDENTIAL THEFT
+    # --------------------------------------------------
+
+    credential_patterns = [
+
+        "account password",
+        "steal password",
+        "get password",
+        "login credentials",
+        "steal credentials"
+    ]
+
+    # --------------------------------------------------
+    # HARASSMENT
+    # --------------------------------------------------
+
+    harassment_patterns = [
+
+        "harass",
+        "bully",
+        "keep bothering",
+        "insult repeatedly",
+        "target repeatedly"
+    ]
+
+    # --------------------------------------------------
+    # COERCION
+    # --------------------------------------------------
+
+    coercion_patterns = [
+
+        "force you",
+        "make you do",
+        "threaten until",
+        "pressure you",
+        "compel you"
+    ]
+
+    # --------------------------------------------------
+    # FRAUD
+    # --------------------------------------------------
+
+    fraud_patterns = [
+
+        "otp dao",
+        "send otp",
+        "bank password",
+        "credit card pin",
+        "verification code"
+    ]
+
+    # --------------------------------------------------
     # SAFE / NON-MALICIOUS CONTEXT
     # --------------------------------------------------
 
@@ -79,9 +144,35 @@ def classify_intent(text):
         if pattern in text:
             intents.append("cyber_intrusion")
 
+    for pattern in social_patterns:
+        if pattern in text:
+            intents.append("social_engineering")
+
+    for pattern in credential_patterns:
+        if pattern in text:
+            intents.append("credential_theft")
+
+    for pattern in harassment_patterns:
+        if pattern in text:
+            intents.append("harassment")
+
+    for pattern in coercion_patterns:
+        if pattern in text:
+            intents.append("coercion")
+
+    for pattern in fraud_patterns:
+        if pattern in text:
+            intents.append("fraud")
+
     for pattern in safe_patterns:
         if pattern in text:
             intents.append("non-malicious")
+
+    # --------------------------------------------------
+    # REMOVE DUPLICATES
+    # --------------------------------------------------
+
+    intents = list(dict.fromkeys(intents))
 
     # --------------------------------------------------
     # DEFAULT
