@@ -7,69 +7,68 @@ def build_response(
     explainability
 ):
 
-    confidence_score = 0.91
+    analysis = engine_output.get(
+        "analysis",
+        {}
+    )
 
-    if engine_output["risk_level"] == "Medium":
-        confidence_score = 0.72
+    risk_level = analysis.get(
+        "risk_level",
+        "Unknown"
+    )
 
-    elif engine_output["risk_level"] == "Low":
-        confidence_score = 0.35
+    stability = analysis.get(
+        "stability_score",
+        0.50
+    )
+
+    confidence = analysis.get(
+        "confidence_score",
+        0.50
+    )
+
+    uncertainty = analysis.get(
+        "uncertainty_score",
+        round(1 - confidence, 2)
+    )
+
+    # recommended action
+    if risk_level == "High":
+        action = "escalate_for_review"
+
+    elif risk_level == "Medium":
+        action = "monitor"
+
+    else:
+        action = "allow"
+
+    # remove duplicates
+    behavioral_signals = list(dict.fromkeys(behavioral_signals))
+    intent_classification = list(dict.fromkeys(intent_classification))
+    explainability = list(dict.fromkeys(explainability))
 
     return {
 
         "input": input_text,
 
-        "language_profile":
-            language_profile,
+        "language_profile": language_profile,
 
-        "behavioral_signals":
-            behavioral_signals,
+        "behavioral_signals": behavioral_signals,
 
-        "intent_classification":
-            intent_classification,
+        "intent_classification": intent_classification,
 
         "risk_assessment": {
 
-            "level":
-                engine_output["risk_level"],
+            "level": risk_level,
 
-            "confidence_score":
-                confidence_score,
+            "stability_score": stability,
 
-            "uncertainty_score":
-                round(
-                    1 - confidence_score,
-                    2
-                )
+            "confidence_score": confidence,
+
+            "uncertainty_score": uncertainty
         },
 
-        "stability_analysis": {
+        "explainability": explainability,
 
-            "stability_score":
-                engine_output[
-                    "stability_score"
-                ],
-
-            "conflict_escalation":
-
-                "High"
-
-                if engine_output[
-                    "risk_level"
-                ] == "High"
-
-                else "Low"
-        },
-
-        "explainability_matrix":
-            explainability,
-
-        "meta": {
-
-            "system_mode":
-                "hybrid_light",
-
-            "engine":
-                "S-CIAX"
-        }
+        "recommended_action": action
     }
