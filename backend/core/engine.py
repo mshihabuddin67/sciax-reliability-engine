@@ -1,14 +1,8 @@
 from backend.core.perturbation import generate_variants
 from backend.core.metrics import compute_stability_score
 from backend.core.fuzzy import best_fuzzy_match
-from backend.core.behavioral_signals import (
-    detect_behavioral_signals
-)
-
-from backend.core.confidence import (
-    calculate_confidence
-)
-
+from backend.core.behavioral_signals import detect_behavioral_signals
+from backend.core.confidence import calculate_confidence
 from backend.app.config import (
     VIOLENCE_STRONG,
     CYBER_STRONG,
@@ -16,48 +10,31 @@ from backend.app.config import (
 )
 
 # ==================================================
-# S-CIAX HYBRID ENGINE v3 STABLE
+# NORMALIZATION
 # ==================================================
 
 def normalize_simple(text: str) -> str:
-
     text = text.lower().strip()
-
-    # lightweight normalization
     text = text.replace("  ", " ")
-
     return text
+
 
 # ==================================================
 # ANALYSIS BUILDER
 # ==================================================
 
-def build_analysis(
-    stability,
-    risk,
-    confidence
-):
+def build_analysis(stability, risk, confidence):
 
     return {
-
-        "stability_score": round(
-            stability,
-            2
-        ),
-
+        "stability_score": round(stability, 2),
         "risk_level": risk,
-
         "confidence_score": confidence,
-
-        "uncertainty_score": round(
-            1 - confidence,
-            2
-        )
+        "uncertainty_score": round(1 - confidence, 2)
     }
 
 
 # ==================================================
-# MAIN ENGINE
+# S-CIAX ENGINE
 # ==================================================
 
 def sciax_engine(prompt):
@@ -76,12 +53,14 @@ def sciax_engine(prompt):
     variants = generate_variants(text)
     stability = compute_stability_score(variants)
 
-    # -----------------------------
-    # SAFE CONTEXT CHECK
-    # -----------------------------
+    # ==================================================
+    # SAFE CONTEXT (DETERMINISTIC OVERRIDE)
+    # ==================================================
     for safe in SAFE_CONTEXTS:
 
         if safe.lower() in text:
+
+            stability = 0.90
 
             confidence = calculate_confidence(
                 stability=stability,
@@ -100,15 +79,17 @@ def sciax_engine(prompt):
                 )
             }
 
-    # -----------------------------
+    # ==================================================
     # HARD VIOLENCE CHECK
-    # -----------------------------
+    # ==================================================
     for v in VIOLENCE_STRONG:
 
         if v.lower() in text:
 
+            stability = 0.15
+
             confidence = calculate_confidence(
-                stability=0.15,
+                stability=stability,
                 behavioral_signals_count=signal_count,
                 strong_match=True,
                 signals=signals
@@ -118,15 +99,15 @@ def sciax_engine(prompt):
                 "prompt": text,
                 "variants": variants,
                 "analysis": build_analysis(
-                    0.15,
+                    stability,
                     "High",
                     confidence
                 )
             }
 
-    # -----------------------------
-    # FUZZY CHECK
-    # -----------------------------
+    # ==================================================
+    # FUZZY MATCH CHECK
+    # ==================================================
     match, score = best_fuzzy_match(
         text,
         VIOLENCE_STRONG,
@@ -156,15 +137,17 @@ def sciax_engine(prompt):
             }
         }
 
-    # -----------------------------
+    # ==================================================
     # CYBER CHECK
-    # -----------------------------
+    # ==================================================
     for c in CYBER_STRONG:
 
         if c.lower() in text:
 
+            stability = 0.25
+
             confidence = calculate_confidence(
-                stability=0.25,
+                stability=stability,
                 behavioral_signals_count=signal_count,
                 strong_match=True,
                 signals=signals
@@ -174,15 +157,15 @@ def sciax_engine(prompt):
                 "prompt": text,
                 "variants": variants,
                 "analysis": build_analysis(
-                    0.25,
+                    stability,
                     "High",
                     confidence
                 )
             }
 
-    # -----------------------------
+    # ==================================================
     # DEFAULT LOGIC
-    # -----------------------------
+    # ==================================================
     if stability > 0.75:
         risk = "Low"
     elif stability > 0.55:
@@ -190,9 +173,6 @@ def sciax_engine(prompt):
     else:
         risk = "High"
 
-    # -----------------------------
-    # FINAL CONFIDENCE (WITH WEIGHTS)
-    # -----------------------------
     confidence = calculate_confidence(
         stability=stability,
         behavioral_signals_count=signal_count,
@@ -202,32 +182,6 @@ def sciax_engine(prompt):
     return {
         "prompt": text,
         "variants": variants,
-        "analysis": build_analysis(
-            stability,
-            risk,
-            confidence
-        )
-            }
-
-    # --------------------------------------------------
-    # CONFIDENCE
-    # --------------------------------------------------
-
-    confidence = calculate_confidence(
-    stability=stability,
-    behavioral_signals_count=signal_count
-    )
-
-    # --------------------------------------------------
-    # FINAL OUTPUT
-    # --------------------------------------------------
-
-    return {
-
-        "prompt": text,
-
-        "variants": variants,
-
         "analysis": build_analysis(
             stability,
             risk,
