@@ -65,7 +65,7 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=0,
-                strong_match=False,
+                strong_match=False
             
             )
 
@@ -91,7 +91,7 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=signal_count,
-                strong_match=True,
+                strong_match=True
                 
             )
 
@@ -119,7 +119,7 @@ def sciax_engine(prompt):
         confidence = calculate_confidence(
             stability=0.20,
             behavioral_signals_count=signal_count,
-            fuzzy_score=score,
+            fuzzy_score=score
             
         )
 
@@ -149,7 +149,7 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=signal_count,
-                strong_match=True,
+                strong_match=True
                 
             )
 
