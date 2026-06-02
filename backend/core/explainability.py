@@ -197,6 +197,121 @@ def generate_explanations(
             break
 
     # ==================================================
+    # FRAUD DETECTION
+    # ==================================================
+
+    fraud_patterns = [
+
+        "otp dao",
+        "send otp",
+        "bank password",
+        "credit card pin",
+        "verification code"
+    ]
+
+    for pattern in fraud_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "fraud-related information request detected"
+            )
+
+            break
+
+    # ==================================================
+    # SOCIAL ENGINEERING
+    # ==================================================
+
+    social_patterns = [
+
+        "fake identity",
+        "pretend to be",
+        "impersonate",
+        "pose as",
+        "act as support"
+    ]
+
+    for pattern in social_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "social engineering behavior detected"
+            )
+
+            break
+
+    # ==================================================
+    # CREDENTIAL THEFT
+    # ==================================================
+
+    credential_patterns = [
+
+        "account password",
+        "steal password",
+        "get password",
+        "login credentials",
+        "steal credentials"
+    ]
+
+    for pattern in credential_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "credential theft pattern detected"
+            )
+
+            break
+
+    # ==================================================
+    # HARASSMENT
+    # ==================================================
+
+    harassment_patterns = [
+
+        "harass",
+        "bully",
+        "keep bothering",
+        "insult repeatedly",
+        "target repeatedly"
+    ]
+
+    for pattern in harassment_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "harassment behavior detected"
+            )
+
+            break
+
+    # ==================================================
+    # COERCION
+    # ==================================================
+
+    coercion_patterns = [
+
+        "force you",
+        "make you do",
+        "threaten until",
+        "pressure you",
+        "compel you"
+    ]
+
+    for pattern in coercion_patterns:
+
+        if pattern in text:
+
+            explanations.append(
+                "coercive behavior detected"
+            )
+
+            break
+
+    # ==================================================
     # FIRST-PERSON THREAT LANGUAGE
     # ==================================================
 
