@@ -7,7 +7,7 @@ DATASETS = [
     "datasets/violence.json",
     "datasets/cyber.json",
     "datasets/fraud.json",
-    "datasets/edge_cases.json"
+    "datasets/edge_cases.json",
 ]
 
 
