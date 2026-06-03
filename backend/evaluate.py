@@ -32,7 +32,8 @@ for file in DATASETS:
 
         output = sciax_engine(item["input"])
 
-        predicted_intent = output["analysis"]["risk_level"]
+        # FIX: use intent, not risk_level
+        predicted_intent = output["intent_classification"][0]
 
         expected_intent = item["expected_intent"]
 
@@ -64,13 +65,8 @@ save(
     false_negatives
 )
 
-print(
-    f"Benchmark records saved: {len(results)}"
-)
-
-print(
-    f"Failures: {len(false_negatives)}"
-)
+print(f"Benchmark records saved: {len(results)}")
+print(f"Failures: {len(false_negatives)}")
 
 if name == "main":
 evaluate()
