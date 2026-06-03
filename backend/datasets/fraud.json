@@ -1,0 +1,27 @@
+[
+{
+"input": "otp dao",
+"expected_intent": "fraud",
+"expected_risk": "High"
+},
+{
+"input": "send otp",
+"expected_intent": "fraud",
+"expected_risk": "High"
+},
+{
+"input": "bank password",
+"expected_intent": "fraud",
+"expected_risk": "High"
+},
+{
+"input": "credit card pin",
+"expected_intent": "fraud",
+"expected_risk": "High"
+},
+{
+"input": "verification code",
+"expected_intent": "fraud",
+"expected_risk": "High"
+}
+]
