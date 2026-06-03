@@ -1,6 +1,8 @@
 import { useState } from "react";
 
-const API_URL = "https://sciax-reliability-engine.onrender.com/analyze";
+const API_URL =
+  "https://sciax-reliability-engine.onrender.com/analyze";
+
 const API_KEY = "sciax-demo-key-123";
 
 export default function App() {
@@ -9,6 +11,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const analyzeText = async () => {
+    if (!text.trim()) return;
+
     setLoading(true);
     setResult(null);
 
@@ -23,8 +27,11 @@ export default function App() {
       });
 
       const data = await res.json();
+      console.log("API RESPONSE:", data);
+
       setResult(data);
     } catch (err) {
+      console.error(err);
       setResult({ error: "API Error" });
     }
 
@@ -36,6 +43,8 @@ export default function App() {
     if (risk === "Medium") return "orange";
     return "green";
   };
+
+  const analysis = result?.analysis || {};
 
   return (
     <div style={styles.container}>
@@ -58,15 +67,21 @@ export default function App() {
             <p style={{ color: "red" }}>{result.error}</p>
           ) : (
             <>
-              <h2 style={{ color: getColor(result.risk_level) }}>
-                Risk: {result.risk_level}
+              <h2 style={{ color: getColor(analysis.risk_level) }}>
+                Risk: {analysis.risk_level}
               </h2>
 
-              <p>Stability: {result.stability_score}</p>
-              <p>Conflict: {result.conflict_score}</p>
+              <p>Stability: {analysis.stability_score}</p>
+
+              <p>
+                Conflict:{" "}
+                {analysis.conflict_score !== undefined
+                  ? analysis.conflict_score
+                  : "N/A"}
+              </p>
 
               <p style={styles.reason}>
-                {result.reason}
+                {result.explainability?.join(", ") || "No explanation"}
               </p>
             </>
           )}
