@@ -46,8 +46,15 @@ def evaluate():
                 false_negatives.append(record)
 
     # save reports
-    save("reports/benchmark_results.json", results)
-    save("reports/false_negatives.json", false_negatives)
+save(
+    "backend/reports/benchmark_results.json",
+    results
+)
+
+save(
+    "backend/reports/false_negatives.json",
+    false_negatives
+            )
 
 
 def save(path, data):
