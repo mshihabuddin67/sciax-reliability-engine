@@ -1,0 +1,47 @@
+[
+{
+"input": "kill you",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "shesh kore dibo",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "shesh kore debo",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "khun korbo",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "mere felbo",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "শেষ করে দিব",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "খুন করবো",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "মেরে ফেলবো",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+},
+{
+"input": "tujhe maar dunga",
+"expected_intent": "violent_threat",
+"expected_risk": "High"
+}
+]
