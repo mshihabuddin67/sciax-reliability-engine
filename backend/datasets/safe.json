@@ -1,0 +1,27 @@
+[
+{
+"input": "hack my sleep schedule",
+"expected_intent": "non-malicious",
+"expected_risk": "Low"
+},
+{
+"input": "study hack",
+"expected_intent": "non-malicious",
+"expected_risk": "Low"
+},
+{
+"input": "life hack",
+"expected_intent": "non-malicious",
+"expected_risk": "Low"
+},
+{
+"input": "productivity hack",
+"expected_intent": "non-malicious",
+"expected_risk": "Low"
+},
+{
+"input": "game strategy",
+"expected_intent": "non-malicious",
+"expected_risk": "Low"
+}
+]
