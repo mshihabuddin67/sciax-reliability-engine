@@ -1,136 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-  <title>S-CIAX Dashboard</title>
-
-  <style>
-
-    body{
-      margin:0;
-      padding:20px;
-      background:#0f172a;
-      font-family:Arial;
-      color:white;
-    }
-
-    h1{
-      color:#38bdf8;
-    }
-
-    .card{
-      background:#1e293b;
-      padding:20px;
-      border-radius:20px;
-      margin-bottom:20px;
-    }
-
-    textarea{
-      width:100%;
-      height:120px;
-      border:none;
-      border-radius:12px;
-      padding:15px;
-      background:#334155;
-      color:white;
-      font-size:16px;
-      box-sizing:border-box;
-    }
-
-    button{
-      width:100%;
-      padding:15px;
-      margin-top:15px;
-      border:none;
-      border-radius:12px;
-      background:#38bdf8;
-      color:black;
-      font-size:16px;
-      font-weight:bold;
-    }
-
-    .result{
-      margin-top:20px;
-      padding:15px;
-      border-radius:15px;
-      background:#020617;
-      display:none;
-    }
-
-    .high{
-      color:#ef4444;
-    }
-
-    .medium{
-      color:#facc15;
-    }
-
-    .low{
-      color:#22c55e;
-    }
-
-  </style>
-
-</head>
-
-<body>
-
-  <h1>S-CIAX Research Dashboard</h1>
-
-  <div class="card">
-
-    <h2>Live Signal Analysis</h2>
-
-    <textarea id="textInput" placeholder="Enter text..."></textarea>
-
-    <button onclick="analyze()">
-      Analyze
-    </button>
-
-    <div class="result" id="resultBox">
-
-      <h3 id="riskText"></h3>
-
-      <p>
-        Stability:
-        <span id="stability"></span>
-      </p>
-
-      <p>
-        Conflict:
-        <span id="conflict"></span>
-      </p>
-
-      <p>
-        Reason:
-        <span id="reason"></span>
-      </p>
-
-    </div>
-
-  </div>
-
-  <div class="card">
-
-    <h2>System Status</h2>
-
-    <p>API Engine: ONLINE</p>
-
-    <p>Explainability: ENABLED</p>
-
-    <p>Deployment: ACTIVE</p>
-
-  </div>
-
-<script>
-
 async function analyze(){
 
   const text = document.getElementById("textInput").value;
-
   const resultBox = document.getElementById("resultBox");
 
   try{
@@ -139,51 +9,45 @@ async function analyze(){
       "https://sciax-reliability-engine.onrender.com/analyze",
       {
         method:"POST",
-
         headers:{
           "Content-Type":"application/json",
           "x-api-key":"sciax-demo-key-123"
         },
-
-        body:JSON.stringify({
-          text:text
-        })
-
+        body:JSON.stringify({ text:text })
       }
     );
 
     const data = await res.json();
 
+    console.log("API RESPONSE:", data);
+
     resultBox.style.display = "block";
+
+    const analysis = data.analysis;
 
     const riskText = document.getElementById("riskText");
 
     riskText.innerText =
-      "Risk Level: " + data.risk_level;
+      "Risk Level: " + analysis.risk_level;
 
     riskText.className =
-      data.risk_level.toLowerCase();
+      analysis.risk_level.toLowerCase();
 
     document.getElementById("stability").innerText =
-      data.stability_score;
+      analysis.stability_score;
 
     document.getElementById("conflict").innerText =
-      data.conflict_score;
+      analysis.conflict_score || "N/A";
 
     document.getElementById("reason").innerText =
-      data.reason;
+      data.explainability
+        ? data.explainability.join(", ")
+        : "No reason provided";
 
   }
 
   catch(error){
-
+    console.error(error);
     alert("API Error");
-
   }
-
 }
-
-</script>
-
-</body>
-</html>
