@@ -3,11 +3,11 @@ from backend.core.engine import sciax_engine
 
 
 DATASETS = [
-    "datasets/safe.json",
-    "datasets/violence.json",
-    "datasets/cyber.json",
-    "datasets/fraud.json",
-    "datasets/edge_cases.json",
+    "backend/datasets/safe.json",
+    "backend/datasets/violence.json",
+    "backend/datasets/cyber.json",
+    "backend/datasets/fraud.json",
+    "backend/datasets/edge_cases.json",
 ]
 
 
