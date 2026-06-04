@@ -141,19 +141,21 @@ def sciax_engine(prompt):
             
         )
 
-        return {
-    "prompt": text,
-    "variants": variants,
-    "analysis": build_analysis(
-        0.20,
-        "High",
-        confidence
-    ),
-    "fuzzy_match": {
-        "matched_pattern": match,
-        "similarity_score": score
-    }
+        response = build_response(
+            text,
+            variants,
+            "violent_threat",
+            0.20,
+            "High",
+            confidence
+        )
+
+        response["fuzzy_match"] = {
+            "matched_pattern": match,
+            "similarity_score": score
         }
+
+        return response
         
     # ==================================================
     # CYBER CHECK
@@ -181,8 +183,8 @@ def sciax_engine(prompt):
             )
 
 # ==================================================
-# FRAUD CHECK
-# ==================================================
+    # FRAUD CHECK
+    # ==================================================
 
 for f in FRAUD_STRONG:
 
