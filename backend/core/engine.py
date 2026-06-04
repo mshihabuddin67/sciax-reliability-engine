@@ -61,23 +61,16 @@ def sciax_engine(prompt):
 
     text = normalize_simple(prompt)
 
-    # -----------------------------
-    # SIGNALS
-    # -----------------------------
     signals = detect_behavioral_signals(text)
     signal_count = len(signals)
 
-    # -----------------------------
-    # VARIANTS + STABILITY
-    # -----------------------------
     variants = generate_variants(text)
     stability = compute_stability_score(variants)
 
     # ==================================================
-    # SAFE CONTEXT (DETERMINISTIC OVERRIDE)
+    # SAFE CONTEXT
     # ==================================================
     for safe in SAFE_CONTEXTS:
-
         if safe.lower() in text:
 
             stability = 0.90
@@ -87,23 +80,21 @@ def sciax_engine(prompt):
                 behavioral_signals_count=0,
                 strong_match=False,
                 safe_override=True
-            
             )
 
             return build_response(
-    text,
-    variants,
-    "non-malicious",
-    stability,
-    "Low",
-    confidence
+                text,
+                variants,
+                "non-malicious",
+                stability,
+                "Low",
+                confidence
             )
 
     # ==================================================
-    # HARD VIOLENCE CHECK
+    # HARD VIOLENCE
     # ==================================================
     for v in VIOLENCE_STRONG:
-
         if v.lower() in text:
 
             stability = 0.15
@@ -112,19 +103,19 @@ def sciax_engine(prompt):
                 stability=stability,
                 behavioral_signals_count=signal_count,
                 strong_match=True
-                
             )
 
             return build_response(
-    text,
-    variants,
-    "violent_threat",
-    stability,
-    "High",
-    confidence
+                text,
+                variants,
+                "violent_threat",
+                stability,
+                "High",
+                confidence
             )
+
     # ==================================================
-    # FUZZY MATCH CHECK
+    # FUZZY MATCH
     # ==================================================
     match, score = best_fuzzy_match(
         text,
@@ -138,7 +129,6 @@ def sciax_engine(prompt):
             stability=0.20,
             behavioral_signals_count=signal_count,
             fuzzy_score=score
-            
         )
 
         response = build_response(
@@ -156,12 +146,11 @@ def sciax_engine(prompt):
         }
 
         return response
-        
+
     # ==================================================
     # CYBER CHECK
     # ==================================================
     for c in CYBER_STRONG:
-
         if c.lower() in text:
 
             stability = 0.25
@@ -170,43 +159,40 @@ def sciax_engine(prompt):
                 stability=stability,
                 behavioral_signals_count=signal_count,
                 strong_match=True
-                
             )
 
             return build_response(
-    text,
-    variants,
-    "cyber_intrusion",
-    stability,
-    "High",
-    confidence
+                text,
+                variants,
+                "cyber_intrusion",
+                stability,
+                "High",
+                confidence
             )
 
-# ==================================================
-    # FRAUD CHECK
     # ==================================================
+    # FRAUD CHECK  (FIXED INDENTATION)
+    # ==================================================
+    for f in FRAUD_STRONG:
+        if f.lower() in text:
 
-for f in FRAUD_STRONG:
+            stability = 0.25
 
-    if f.lower() in text:
+            confidence = calculate_confidence(
+                stability=stability,
+                behavioral_signals_count=signal_count,
+                strong_match=True
+            )
 
-        stability = 0.25
+            return build_response(
+                text,
+                variants,
+                "fraud",
+                stability,
+                "High",
+                confidence
+            )
 
-        confidence = calculate_confidence(
-            stability=stability,
-            behavioral_signals_count=signal_count,
-            strong_match=True
-        )
-
-        return build_response(
-            text,
-            variants,
-            "fraud",
-            stability,
-            "High",
-            confidence
-        )
-    
     # ==================================================
     # DEFAULT LOGIC
     # ==================================================
@@ -219,15 +205,14 @@ for f in FRAUD_STRONG:
 
     confidence = calculate_confidence(
         stability=stability,
-        behavioral_signals_count=signal_count,
-        
+        behavioral_signals_count=signal_count
     )
 
     return build_response(
-    text,
-    variants,
-    "unknown_or_safe",
-    stability,
-    risk,
-    confidence
-            )
+        text,
+        variants,
+        "unknown_or_safe",
+        stability,
+        risk,
+        confidence
+        )
