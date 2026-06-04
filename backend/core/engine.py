@@ -23,15 +23,24 @@ def normalize_simple(text: str) -> str:
 # ANALYSIS BUILDER
 # ==================================================
 
-def build_analysis(stability, risk, confidence):
-
+def build_response(
+    text,
+    variants,
+    intent,
+    stability,
+    risk,
+    confidence
+):
     return {
-        "stability_score": round(stability, 2),
-        "risk_level": risk,
-        "confidence_score": confidence,
-        "uncertainty_score": round(1 - confidence, 2),
+        "prompt": text,
+        "variants": variants,
+        "intent_classification": [intent],
+        "analysis": build_analysis(
+            stability,
+            risk,
+            confidence
+        )
     }
-
 
 # ==================================================
 # S-CIAX ENGINE
@@ -70,15 +79,14 @@ def sciax_engine(prompt):
             
             )
 
-            return {
-                "prompt": text,
-                "variants": variants,
-                "analysis": build_analysis(
-                    stability,
-                    "Low",
-                    confidence
-                )
-            }
+            return build_response(
+    text,
+    variants,
+    "non-malicious",
+    stability,
+    "Low",
+    confidence
+            )
 
     # ==================================================
     # HARD VIOLENCE CHECK
@@ -96,47 +104,33 @@ def sciax_engine(prompt):
                 
             )
 
-            return {
-                "prompt": text,
-                "variants": variants,
-                "analysis": build_analysis(
-                    stability,
-                    "High",
-                    confidence
-                )
-            }
+            return build_response(
+    text,
+    variants,
+    "violent_threat",
+    stability,
+    "High",
+    confidence
+            )
 
     # ==================================================
     # FUZZY MATCH CHECK
     # ==================================================
-    match, score = best_fuzzy_match(
-        text,
-        VIOLENCE_STRONG,
-        threshold=0.82
-    )
+    response = build_response(
+    text,
+    variants,
+    "violent_threat",
+    0.20,
+    "High",
+    confidence
+)
 
-    if match:
+response["fuzzy_match"] = {
+    "matched_pattern": match,
+    "similarity_score": score
+}
 
-        confidence = calculate_confidence(
-            stability=0.20,
-            behavioral_signals_count=signal_count,
-            fuzzy_score=score
-            
-        )
-
-        return {
-            "prompt": text,
-            "variants": variants,
-            "analysis": build_analysis(
-                0.20,
-                "High",
-                confidence
-            ),
-            "fuzzy_match": {
-                "matched_pattern": match,
-                "similarity_score": score
-            }
-        }
+return response
 
     # ==================================================
     # CYBER CHECK
@@ -154,15 +148,14 @@ def sciax_engine(prompt):
                 
             )
 
-            return {
-                "prompt": text,
-                "variants": variants,
-                "analysis": build_analysis(
-                    stability,
-                    "High",
-                    confidence
-                )
-            }
+            return build_response(
+    text,
+    variants,
+    "cyber_intrusion",
+    stability,
+    "High",
+    confidence
+            )
 
     # ==================================================
     # DEFAULT LOGIC
@@ -180,12 +173,11 @@ def sciax_engine(prompt):
         
     )
 
-    return {
-        "prompt": text,
-        "variants": variants,
-        "analysis": build_analysis(
-            stability,
-            risk,
-            confidence
-        )
-            }
+    return build_response(
+    text,
+    variants,
+    "unknown_or_safe",
+    stability,
+    risk,
+    confidence
+    )
