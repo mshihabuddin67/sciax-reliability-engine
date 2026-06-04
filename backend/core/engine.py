@@ -6,6 +6,7 @@ from backend.core.confidence import calculate_confidence
 from backend.app.config import (
     VIOLENCE_STRONG,
     CYBER_STRONG,
+    FRAUD_STRONG,
     SAFE_CONTEXTS
 )
 
@@ -179,6 +180,31 @@ def sciax_engine(prompt):
     confidence
             )
 
+# ==================================================
+# FRAUD CHECK
+# ==================================================
+
+for f in FRAUD_STRONG:
+
+    if f.lower() in text:
+
+        stability = 0.25
+
+        confidence = calculate_confidence(
+            stability=stability,
+            behavioral_signals_count=signal_count,
+            strong_match=True
+        )
+
+        return build_response(
+            text,
+            variants,
+            "fraud",
+            stability,
+            "High",
+            confidence
+        )
+    
     # ==================================================
     # DEFAULT LOGIC
     # ==================================================
