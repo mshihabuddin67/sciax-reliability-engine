@@ -47,7 +47,7 @@ SAFE_CONTEXTS = [
 
     # harmless expressions
     "kill time",
-    "destroy boredom"
+    "destroy boredom",
 ]
 
 # --------------------------------------------------
@@ -79,6 +79,10 @@ VIOLENCE_STRONG = [
 
     "toke dekhe nibo",
 
+    "khun korbo",
+
+    "mere felbo",
+    
     # ---------------- BANGLA ----------------
 
     "আমি তোকে মারবো",
@@ -96,7 +100,9 @@ VIOLENCE_STRONG = [
 
     "উড়িয়ে দিব",
     "ধ্বংস করে দিব",
-
+    "খুন করবো",
+    "মেরে ফেলবো",
+    
     # ---------------- HINDI ----------------
 
     "maar dunga",
@@ -105,7 +111,7 @@ VIOLENCE_STRONG = [
     "tujhe mar dunga",
     "tujhe maar dunga",
 
-    "tujhe khatam kar dunga"
+    "tujhe khatam kar dunga",
 ]
 
 # --------------------------------------------------
@@ -122,6 +128,8 @@ CYBER_STRONG = [
     "exploit vulnerability",
     "break firewall",
 
+    "breach server",
+    
     # ---------------- BANGLISH ----------------
 
     "system hack korbo",
@@ -140,7 +148,20 @@ CYBER_STRONG = [
 
     "system hack karunga",
     "data churaunga",
-    "security tod dunga"
+    "security tod dunga",
+]
+
+# ==================================================
+# FRAUD DETECTION
+# ==================================================
+
+FRAUD_STRONG = [
+    "otp",
+    "otp dao",
+    "send otp",
+    "bank password",
+    "credit card pin",
+    "verification code",
 ]
 
 # --------------------------------------------------
