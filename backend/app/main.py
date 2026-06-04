@@ -142,3 +142,14 @@ def benchmark_reports():
         "data":
             data
     }
+
+@app.post("/run-benchmark")
+def run_benchmark():
+
+    from backend.evaluate import evaluate
+
+    evaluate()
+
+    return {
+        "status": "Benchmark completed"
+    }
