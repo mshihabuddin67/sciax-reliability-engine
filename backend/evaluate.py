@@ -1,5 +1,5 @@
 import json
-from backend.core.sciax_engine import sciax_engine
+from backend.core.engine import sciax_engine
 
 
 DATASETS = [
