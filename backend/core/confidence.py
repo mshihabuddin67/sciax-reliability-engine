@@ -6,31 +6,39 @@ def calculate_confidence(
     safe_override=False
 ):
 
-    # normalize stability
     stability = max(0.0, min(stability, 1.0))
 
     # ==================================================
     # SAFE OVERRIDE
     # ==================================================
     if safe_override:
-        confidence = min(0.95, 0.85 + stability * 0.1)
+        confidence = min(
+            0.98,
+            0.85 + stability * 0.10
+        )
         return round(confidence, 2)
 
     # ==================================================
     # BASE
     # ==================================================
-    confidence = 0.30
+    confidence = stability * 0.50
 
-    confidence += stability * 0.25
+    # behavioral evidence
+    confidence += min(
+        behavioral_signals_count * 0.08,
+        0.20
+    )
 
-    # safer penalty cap
-    confidence -= min(0.25, behavioral_signals_count * 0.06)
+    # fuzzy evidence
+    confidence += fuzzy_score * 0.15
 
-    confidence += fuzzy_score * 0.20
-
+    # deterministic keyword hit
     if strong_match:
         confidence += 0.20
 
-    confidence = max(0.05, min(confidence, 0.98))
+    confidence = max(
+        0.05,
+        min(confidence, 0.99)
+    )
 
     return round(confidence, 2)
