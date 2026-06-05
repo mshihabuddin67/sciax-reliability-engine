@@ -97,7 +97,7 @@ def sciax_engine(prompt):
     for v in VIOLENCE_STRONG:
         if v.lower() in text:
 
-            stability = 0.15
+            stability = 0.85
 
             confidence = calculate_confidence(
                 stability=stability,
@@ -126,7 +126,7 @@ def sciax_engine(prompt):
     if match:
 
         confidence = calculate_confidence(
-            stability=0.20,
+            stability=score,
             behavioral_signals_count=signal_count,
             fuzzy_score=score
         )
@@ -135,7 +135,6 @@ def sciax_engine(prompt):
             text,
             variants,
             "violent_threat",
-            0.20,
             "High",
             confidence
         )
@@ -153,7 +152,7 @@ def sciax_engine(prompt):
     for c in CYBER_STRONG:
         if c.lower() in text:
 
-            stability = 0.25
+            stability = 0.80
 
             confidence = calculate_confidence(
                 stability=stability,
@@ -176,7 +175,7 @@ def sciax_engine(prompt):
     for f in FRAUD_STRONG:
         if f.lower() in text:
 
-            stability = 0.25
+            stability = 0.80
 
             confidence = calculate_confidence(
                 stability=stability,
