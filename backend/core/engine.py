@@ -2,6 +2,7 @@ from backend.core.perturbation import generate_variants
 from backend.core.metrics import compute_stability_score
 from backend.core.fuzzy import best_fuzzy_match
 from backend.core.behavioral_signals import detect_behavioral_signals
+from backend.core.signal_strength import calculate_signal_weight
 from backend.core.confidence import calculate_confidence
 from backend.app.config import (
     VIOLENCE_STRONG,
@@ -33,6 +34,7 @@ def build_analysis(stability, risk, confidence):
         "uncertainty_score": round(1 - confidence, 2),
     }
 
+
 def build_response(
     text,
     variants,
@@ -41,6 +43,7 @@ def build_response(
     risk,
     confidence
 ):
+
     return {
         "prompt": text,
         "variants": variants,
@@ -54,16 +57,24 @@ def build_response(
 
 
 # ==================================================
-# S-CIAX ENGINE
+# S-CIAX ENGINE (UPGRADED CORE)
 # ==================================================
 
 def sciax_engine(prompt):
 
     text = normalize_simple(prompt)
 
+    # --------------------------------------------------
+    # SIGNALS
+    # --------------------------------------------------
     signals = detect_behavioral_signals(text)
     signal_count = len(signals)
 
+    signal_strength = calculate_signal_weight(signals)
+
+    # --------------------------------------------------
+    # VARIANTS + STABILITY
+    # --------------------------------------------------
     variants = generate_variants(text)
     stability = compute_stability_score(variants)
 
@@ -78,6 +89,7 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=0,
+                signal_strength=0.0,
                 strong_match=False,
                 safe_override=True
             )
@@ -102,6 +114,7 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=signal_count,
+                signal_strength=signal_strength,
                 strong_match=True
             )
 
@@ -128,6 +141,7 @@ def sciax_engine(prompt):
         confidence = calculate_confidence(
             stability=score,
             behavioral_signals_count=signal_count,
+            signal_strength=signal_strength,
             fuzzy_score=score
         )
 
@@ -135,6 +149,7 @@ def sciax_engine(prompt):
             text,
             variants,
             "violent_threat",
+            score,
             "High",
             confidence
         )
@@ -157,6 +172,7 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=signal_count,
+                signal_strength=signal_strength,
                 strong_match=True
             )
 
@@ -170,7 +186,7 @@ def sciax_engine(prompt):
             )
 
     # ==================================================
-    # FRAUD CHECK  (FIXED INDENTATION)
+    # FRAUD CHECK
     # ==================================================
     for f in FRAUD_STRONG:
         if f.lower() in text:
@@ -180,6 +196,7 @@ def sciax_engine(prompt):
             confidence = calculate_confidence(
                 stability=stability,
                 behavioral_signals_count=signal_count,
+                signal_strength=signal_strength,
                 strong_match=True
             )
 
@@ -195,6 +212,7 @@ def sciax_engine(prompt):
     # ==================================================
     # DEFAULT LOGIC
     # ==================================================
+
     if stability > 0.75:
         risk = "Low"
     elif stability > 0.55:
@@ -204,7 +222,8 @@ def sciax_engine(prompt):
 
     confidence = calculate_confidence(
         stability=stability,
-        behavioral_signals_count=signal_count
+        behavioral_signals_count=signal_count,
+        signal_strength=signal_strength
     )
 
     return build_response(
@@ -214,4 +233,4 @@ def sciax_engine(prompt):
         stability,
         risk,
         confidence
-        )
+    )
