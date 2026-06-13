@@ -20,48 +20,57 @@ SIGNAL_WEIGHTS = {
 }
 
 
-def calculate_signal_weight(signals):
+def calculate_signal_strength(signals):
 
-    if not signals:
+    try:
+        if not signals or not isinstance(signals, list):
+            return 0.0
+
+        score = 0.0
+
+        for signal in signals:
+
+            if not signal:
+                continue
+
+            weight = SIGNAL_WEIGHTS.get(signal, 0.0)
+
+            # ==================================================
+            # NON-LINEAR BOOST (HIGH RISK SIGNALS)
+            # ==================================================
+            if weight >= 0.20:
+                weight = weight ** 1.15
+
+            score += weight
+
+        # ==================================================
+        # INTERACTION BOOST (IMPORTANT COMBOS)
+        # ==================================================
+
+        if (
+            "fraud intent" in signals and
+            "social engineering" in signals
+        ):
+            score *= 1.15
+
+        if (
+            "cyber intrusion intent" in signals and
+            "credential theft" in signals
+        ):
+            score *= 1.20
+
+        # ==================================================
+        # NORMALIZATION (0–1 SAFE BOUND)
+        # ==================================================
+
+        normalized = score / max(len(signals), 1)
+
+        return round(
+            max(0.0, min(normalized, 1.0)),
+            2
+        )
+
+    except Exception as e:
+        # prevents Render 500 crash
+        print(f"[S-CIAX SIGNAL ERROR]: {e}")
         return 0.0
-
-    score = 0.0
-
-    for signal in signals:
-
-        weight = SIGNAL_WEIGHTS.get(signal, 0.0)
-
-        # ==================================================
-        # NON-LINEAR BOOST (HIGH RISK SIGNALS)
-        # ==================================================
-        if weight >= 0.20:
-            weight = weight ** 1.15
-
-        score += weight
-
-    # ==================================================
-    # INTERACTION BOOST (IMPORTANT COMBOS)
-    # ==================================================
-
-    if (
-        "fraud intent" in signals and
-        "social engineering" in signals
-    ):
-        score *= 1.15
-
-    if (
-        "cyber intrusion intent" in signals and
-        "credential theft" in signals
-    ):
-        score *= 1.20
-
-    # ==================================================
-    # NORMALIZATION (0–1 SAFE BOUND)
-    # ==================================================
-
-    normalized = score / max(len(signals), 1)
-
-    return round(
-        max(0.0, min(normalized, 1.0)),
-        2
-    )
