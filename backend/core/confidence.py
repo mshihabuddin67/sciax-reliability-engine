@@ -2,11 +2,13 @@ def calculate_confidence(
     stability,
     behavioral_signals_count=0,
     fuzzy_score=0.0,
+    signal_strength=0.0,
     strong_match=False,
     safe_override=False
 ):
 
     stability = max(0.0, min(stability, 1.0))
+    signal_strength = max(0.0, min(signal_strength, 1.0))
 
     # ==================================================
     # SAFE OVERRIDE
@@ -19,26 +21,43 @@ def calculate_confidence(
         return round(confidence, 2)
 
     # ==================================================
-    # BASE
+    # BASE CONFIDENCE (CORE STABILITY)
     # ==================================================
-    confidence = stability * 0.50
+    confidence = stability * 0.45
 
-    # behavioral evidence
+    # ==================================================
+    # BEHAVIORAL EVIDENCE
+    # ==================================================
     confidence += min(
-        behavioral_signals_count * 0.08,
-        0.20
+        behavioral_signals_count * 0.06,
+        0.18
     )
 
-    # fuzzy evidence
-    confidence += fuzzy_score * 0.15
+    # ==================================================
+    # FUZZY / SEMANTIC EVIDENCE
+    # ==================================================
+    confidence += fuzzy_score * 0.12
 
-    # deterministic keyword hit
+    # ==================================================
+    # SIGNAL STRENGTH INFLUENCE (NEW IMPORTANT LAYER)
+    # ==================================================
+    confidence += signal_strength * 0.20
+
+    # ==================================================
+    # STRONG KEYWORD / RULE HIT BOOST
+    # ==================================================
     if strong_match:
-        confidence += 0.20
+        confidence += 0.18
 
-    confidence = max(
-        0.05,
-        min(confidence, 0.99)
-    )
+    # ==================================================
+    # NON-LINEAR STABILIZATION (IMPORTANT)
+    # ==================================================
+    if stability > 0.85:
+        confidence *= 1.05
+
+    # ==================================================
+    # BOUNDING (SAFE RANGE)
+    # ==================================================
+    confidence = max(0.05, min(confidence, 0.99))
 
     return round(confidence, 2)
