@@ -26,7 +26,7 @@ def calibrate_confidence(raw_score: float) -> float:
 # ==================================================
 # 2. STABILITY SCORE (RECENT-WEIGHTED)
 # ==================================================
-def compute_stability_score(previous_scores):
+def compute_calibrated_stability_score(previous_scores):
     """
     Measures consistency across runs.
     Higher stability = lower variance.
