@@ -70,7 +70,7 @@ def sciax_engine(prompt):
     signals = detect_behavioral_signals(text)
     signal_count = len(signals)
 
-    signal_strength = calculate_signal_weight(signals)
+    signal_strength = calculate_signal_strength(signals)
 
     # --------------------------------------------------
     # VARIANTS + STABILITY
