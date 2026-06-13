@@ -1,10 +1,9 @@
-from backend.core.signal_weights import (
-    calculate_signal_weight
-)
+from backend.core.signal_strength import calculate_signal_strength
+
 
 def calculate_severity(signals):
 
-    raw_score = calculate_signal_weight(signals)
+    raw_score = calculate_signal_strength(signals)
 
     severity = max(
         0.0,
