@@ -1,5 +1,5 @@
 # ==================================================
-# S-CIAX RESPONSE BUILDER
+# S-CIAX RESPONSE BUILDER (UPGRADED)
 # ==================================================
 
 def build_response(
@@ -17,92 +17,79 @@ def build_response(
     # SAFE ANALYSIS ACCESS
     # --------------------------------------------------
 
-    analysis = engine_output.get(
-        "analysis",
-        {}
-    )
+    analysis = engine_output.get("analysis", {})
 
-    risk_level = analysis.get(
-        "risk_level",
-        "Unknown"
-    )
+    risk_level = analysis.get("risk_level", "Unknown")
+    stability = analysis.get("stability_score", 0.50)
+    confidence = analysis.get("confidence_score", 0.50)
+    uncertainty = analysis.get("uncertainty_score", 0.50)
 
-    # --------------------------------------------------
-    # RECOMMENDED ACTION
-    # --------------------------------------------------
+    # ==================================================
+    # RECOMMENDED ACTION (IMPROVED LOGIC)
+    # ==================================================
 
-    if risk_level == "High":
+    if risk_level == "Critical":
+        action = "block_immediately"
 
+    elif risk_level == "High":
         action = "escalate_for_review"
 
     elif risk_level == "Medium":
-
         action = "monitor"
 
     else:
-
         action = "allow"
 
-    # --------------------------------------------------
-    # REMOVE DUPLICATES
-    # --------------------------------------------------
+    # ==================================================
+    # RISK QUALITY TAG (NEW INSIGHT LAYER)
+    # ==================================================
 
-    behavioral_signals = list(
-        dict.fromkeys(behavioral_signals)
-    )
+    if confidence > 0.80 and uncertainty < 0.25:
+        risk_quality = "high_certainty"
 
-    intent_classification = list(
-        dict.fromkeys(intent_classification)
-    )
+    elif uncertainty > 0.50:
+        risk_quality = "ambiguous"
 
-    explainability = list(
-        dict.fromkeys(explainability)
-    )
+    else:
+        risk_quality = "standard"
 
-    # --------------------------------------------------
+    # ==================================================
+    # CLEAN DUPLICATES
+    # ==================================================
+
+    behavioral_signals = list(dict.fromkeys(behavioral_signals))
+    intent_classification = list(dict.fromkeys(intent_classification))
+    explainability = list(dict.fromkeys(explainability))
+
+    # ==================================================
     # FINAL RESPONSE
-    # --------------------------------------------------
+    # ==================================================
 
     return {
 
         "input": input_text,
 
-        "language_profile":
-            language_profile,
+        "language_profile": language_profile,
 
-        "behavioral_signals":
-            behavioral_signals,
+        "behavioral_signals": behavioral_signals,
 
-        "intent_classification":
-            intent_classification,
+        "intent_classification": intent_classification,
 
         "risk_assessment": {
 
-            "level":
-                risk_level,
+            "level": risk_level,
 
-            "stability_score":
-                analysis.get(
-                    "stability_score",
-                    0.50
-                ),
+            "stability_score": round(stability, 2),
 
-            "confidence_score":
-                analysis.get(
-                    "confidence_score",
-                    0.50
-                ),
+            "confidence_score": round(confidence, 2),
 
-            "uncertainty_score":
-                analysis.get(
-                    "uncertainty_score",
-                    0.50
-                )
+            "uncertainty_score": round(uncertainty, 2),
+
+            # NEW LAYER
+            "risk_quality": risk_quality
         },
 
-        "explainability":
-            explainability,
+        "explainability": explainability,
 
-        "recommended_action":
-            action
+        "recommended_action": action
     }
