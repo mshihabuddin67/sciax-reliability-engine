@@ -4,6 +4,13 @@ from backend.core.fuzzy import best_fuzzy_match
 from backend.core.behavioral_signals import detect_behavioral_signals
 from backend.core.signal_strength import calculate_signal_strength
 from backend.core.confidence import calculate_confidence
+
+from backend.core.sciax_calibration_core import (
+    calibrate_confidence,
+    compute_calibrated_stability_score,
+    compute_uncertainty
+)
+
 from backend.app.config import (
     VIOLENCE_STRONG,
     CYBER_STRONG,
