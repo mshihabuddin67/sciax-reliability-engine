@@ -249,10 +249,12 @@ return build_response(
     else:
         risk = "High"
 
-    raw_confidence = calculate_confidence(
+raw_confidence = calculate_confidence(
     stability=stability,
-    behavioral_signals_count=signal_count,
-    signal_strength=signal_strength
+    behavioral_signals_count=0,
+    signal_strength=0.0,
+    strong_match=False,
+    safe_override=True
 )
 
 confidence = calibrate_confidence(
@@ -267,9 +269,9 @@ uncertainty = compute_uncertainty(
 return build_response(
     text,
     variants,
-    "unknown_or_safe",
+    "non-malicious",
     stability,
-    risk,
+    "Low",
     confidence,
     uncertainty
 )
