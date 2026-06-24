@@ -32,18 +32,13 @@ def normalize_simple(text: str) -> str:
 # ANALYSIS BUILDER
 # ==================================================
 
-def build_analysis(
-    stability,
-    risk,
-    confidence,
-    uncertainty
-):
+def build_analysis(stability, risk, confidence):
 
     return {
         "stability_score": round(stability, 2),
         "risk_level": risk,
         "confidence_score": confidence,
-        "uncertainty_score": uncertainty,
+        "uncertainty_score": round(1 - confidence, 2),
     }
 
 
@@ -53,8 +48,7 @@ def build_response(
     intent,
     stability,
     risk,
-    confidence,
-    uncertainty
+    confidence
 ):
 
     return {
@@ -64,8 +58,7 @@ def build_response(
         "analysis": build_analysis(
             stability,
             risk,
-            confidence,
-            uncertainty
+            confidence
         )
     }
 
@@ -90,153 +83,138 @@ def sciax_engine(prompt):
     # VARIANTS + STABILITY
     # --------------------------------------------------
     variants = generate_variants(text)
-    stability = compute_calibrated_stability_score(variants)
+    stability = compute_stability_score(variants)
 
     # ==================================================
     # SAFE CONTEXT
     # ==================================================
-    raw_confidence = calculate_confidence(
-    stability=stability,
-    behavioral_signals_count=0,
-    signal_strength=0.0,
-    strong_match=False,
-    safe_override=True
-)
+    for safe in SAFE_CONTEXTS:
+        if safe.lower() in text:
 
-confidence = calibrate_confidence(
-    raw_confidence
-)
+            stability = 0.90
 
-uncertainty = compute_uncertainty(
-    signals,
-    confidence
-)
+            confidence = calculate_confidence(
+                stability=stability,
+                behavioral_signals_count=0,
+                signal_strength=0.0,
+                strong_match=False,
+                safe_override=True
+            )
 
-return build_response(
-    text,
-    variants,
-    "non-malicious",
-    stability,
-    "Low",
-    confidence,
-    uncertainty
-)
+            return build_response(
+                text,
+                variants,
+                "non-malicious",
+                stability,
+                "Low",
+                confidence
+            )
 
     # ==================================================
     # HARD VIOLENCE
     # ==================================================
-    raw_confidence = calculate_confidence(
-    stability=stability,
-    behavioral_signals_count=signal_count,
-    signal_strength=signal_strength,
-    strong_match=True
-)
+    for v in VIOLENCE_STRONG:
+        if v.lower() in text:
 
-confidence = calibrate_confidence(
-    raw_confidence
-)
+            stability = 0.85
 
-uncertainty = compute_uncertainty(
-    signals,
-    confidence
-)
+            confidence = calculate_confidence(
+                stability=stability,
+                behavioral_signals_count=signal_count,
+                signal_strength=signal_strength,
+                strong_match=True
+            )
 
-return build_response(
-    text,
-    variants,
-    "violent_threat",
-    stability,
-    "High",
-    confidence,
-    uncertainty
-)
+            return build_response(
+                text,
+                variants,
+                "violent_threat",
+                stability,
+                "High",
+                confidence
+            )
 
     # ==================================================
     # FUZZY MATCH
     # ==================================================
-    raw_confidence = calculate_confidence(
-    stability=score,
-    behavioral_signals_count=signal_count,
-    signal_strength=signal_strength,
-    fuzzy_score=score
-)
+    match, score = best_fuzzy_match(
+        text,
+        VIOLENCE_STRONG,
+        threshold=0.82
+    )
 
-confidence = calibrate_confidence(
-    raw_confidence
-)
+    if match:
 
-uncertainty = compute_uncertainty(
-    signals,
-    confidence
-)
+        confidence = calculate_confidence(
+            stability=score,
+            behavioral_signals_count=signal_count,
+            signal_strength=signal_strength,
+            fuzzy_score=score
+        )
 
-response = build_response(
-    text,
-    variants,
-    "violent_threat",
-    score,
-    "High",
-    confidence,
-    uncertainty
-)
+        response = build_response(
+            text,
+            variants,
+            "violent_threat",
+            score,
+            "High",
+            confidence
+        )
+
+        response["fuzzy_match"] = {
+            "matched_pattern": match,
+            "similarity_score": score
+        }
+
+        return response
 
     # ==================================================
     # CYBER CHECK
     # ==================================================
-    raw_confidence = calculate_confidence(
-    stability=stability,
-    behavioral_signals_count=signal_count,
-    signal_strength=signal_strength,
-    strong_match=True
-)
+    for c in CYBER_STRONG:
+        if c.lower() in text:
 
-confidence = calibrate_confidence(
-    raw_confidence
-)
+            stability = 0.80
 
-uncertainty = compute_uncertainty(
-    signals,
-    confidence
-)
+            confidence = calculate_confidence(
+                stability=stability,
+                behavioral_signals_count=signal_count,
+                signal_strength=signal_strength,
+                strong_match=True
+            )
 
-return build_response(
-    text,
-    variants,
-    "cyber_intrusion",
-    stability,
-    "High",
-    confidence,
-    uncertainty
-)
+            return build_response(
+                text,
+                variants,
+                "cyber_intrusion",
+                stability,
+                "High",
+                confidence
+            )
 
     # ==================================================
     # FRAUD CHECK
     # ==================================================
-    raw_confidence = calculate_confidence(
-    stability=stability,
-    behavioral_signals_count=signal_count,
-    signal_strength=signal_strength,
-    strong_match=True
-)
+    for f in FRAUD_STRONG:
+        if f.lower() in text:
 
-confidence = calibrate_confidence(
-    raw_confidence
-)
+            stability = 0.80
 
-uncertainty = compute_uncertainty(
-    signals,
-    confidence
-)
+            confidence = calculate_confidence(
+                stability=stability,
+                behavioral_signals_count=signal_count,
+                signal_strength=signal_strength,
+                strong_match=True
+            )
 
-return build_response(
-    text,
-    variants,
-    "fraud",
-    stability,
-    "High",
-    confidence,
-    uncertainty
-)
+            return build_response(
+                text,
+                variants,
+                "fraud",
+                stability,
+                "High",
+                confidence
+            )
 
     # ==================================================
     # DEFAULT LOGIC
@@ -249,29 +227,17 @@ return build_response(
     else:
         risk = "High"
 
-raw_confidence = calculate_confidence(
-    stability=stability,
-    behavioral_signals_count=0,
-    signal_strength=0.0,
-    strong_match=False,
-    safe_override=True
-)
+    confidence = calculate_confidence(
+        stability=stability,
+        behavioral_signals_count=signal_count,
+        signal_strength=signal_strength
+    )
 
-confidence = calibrate_confidence(
-    raw_confidence
-)
-
-uncertainty = compute_uncertainty(
-    signals,
-    confidence
-)
-
-return build_response(
-    text,
-    variants,
-    "non-malicious",
-    stability,
-    "Low",
-    confidence,
-    uncertainty
+    return build_response(
+        text,
+        variants,
+        "unknown_or_safe",
+        stability,
+        risk,
+        confidence
 )
