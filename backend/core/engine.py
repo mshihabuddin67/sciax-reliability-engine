@@ -228,18 +228,18 @@ def sciax_engine(prompt):
         risk = "High"
 
     raw_confidence = calculate_confidence(
-    stability=stability,
-    behavioral_signals_count=signal_count,
-    signal_strength=signal_strength
-)
+        stability=stability,
+        behavioral_signals_count=signal_count,
+        signal_strength=signal_strength
+    )
 
-confidence = calibrate_confidence(raw_confidence)
+    confidence = calibrate_confidence(raw_confidence)
 
-return build_response(
-    text,
-    variants,
-    "unknown_or_safe",
-    stability,
-    risk,
-    confidence
-)
+    return build_response(
+        text,
+        variants,
+        "unknown_or_safe",
+        stability,
+        risk,
+        confidence
+    )
