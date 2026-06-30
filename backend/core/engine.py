@@ -1,5 +1,5 @@
 from backend.core.perturbation import generate_variants
-from backend.core.metrics import compute_stability_score
+from backend.core.stability_engine import compute_dynamic_stability
 from backend.core.fuzzy import best_fuzzy_match
 from backend.core.behavioral_signals import detect_behavioral_signals
 from backend.core.signal_strength import calculate_signal_strength
@@ -83,7 +83,7 @@ def sciax_engine(prompt):
     # VARIANTS + STABILITY
     # --------------------------------------------------
     variants = generate_variants(text)
-    stability = compute_stability_score(variants)
+    stability = compute_dynamic_stability(variants)
 
     # ==================================================
     # SAFE CONTEXT
