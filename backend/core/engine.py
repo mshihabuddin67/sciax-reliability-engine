@@ -3,7 +3,7 @@ from backend.core.stability_engine import compute_dynamic_stability
 from backend.core.fuzzy import best_fuzzy_match
 from backend.core.behavioral_signals import detect_behavioral_signals
 from backend.core.signal_strength import calculate_signal_strength
-from backend.core.confidence import calculate_confidence
+from backend.core.confidence_fusion import compute_final_confidence
 
 from backend.core.sciax_calibration_core import (
     calibrate_confidence,
@@ -93,11 +93,11 @@ def sciax_engine(prompt):
 
             stability = 0.90
 
-            confidence = calculate_confidence(
+            confidence = compute_final_confidence(
                 stability=stability,
-                behavioral_signals_count=0,
                 signal_strength=0.0,
-                strong_match=False,
+                behavioral_signals_count=0,
+                intent_consistency=1.0,
                 safe_override=True
             )
 
@@ -118,10 +118,11 @@ def sciax_engine(prompt):
 
             stability = 0.85
 
-            confidence = calculate_confidence(
+            confidence = compute_final_confidence(
                 stability=stability,
-                behavioral_signals_count=signal_count,
                 signal_strength=signal_strength,
+                behavioral_signals_count=signal_count,
+                intent_consistency=1.0,
                 strong_match=True
             )
 
@@ -145,11 +146,12 @@ def sciax_engine(prompt):
 
     if match:
 
-        confidence = calculate_confidence(
+        confidence = compute_final_confidence(
             stability=score,
-            behavioral_signals_count=signal_count,
             signal_strength=signal_strength,
-            fuzzy_score=score
+            behavioral_signals_count=signal_count,
+            fuzzy_score=score,
+            intent_consistency=1.0
         )
 
         response = build_response(
@@ -176,10 +178,11 @@ def sciax_engine(prompt):
 
             stability = 0.80
 
-            confidence = calculate_confidence(
+            confidence = compute_final_confidence(
                 stability=stability,
-                behavioral_signals_count=signal_count,
                 signal_strength=signal_strength,
+                behavioral_signals_count=signal_count,
+                intent_consistency=1.0,
                 strong_match=True
             )
 
@@ -200,10 +203,11 @@ def sciax_engine(prompt):
 
             stability = 0.80
 
-            confidence = calculate_confidence(
+            confidence = compute_final_confidence(
                 stability=stability,
-                behavioral_signals_count=signal_count,
                 signal_strength=signal_strength,
+                behavioral_signals_count=signal_count,
+                intent_consistency=1.0,
                 strong_match=True
             )
 
@@ -227,13 +231,16 @@ def sciax_engine(prompt):
     else:
         risk = "High"
 
-    raw_confidence = calculate_confidence(
+    confidence = compute_final_confidence(
         stability=stability,
+        signal_strength=signal_strength,
         behavioral_signals_count=signal_count,
-        signal_strength=signal_strength
+        fuzzy_score=0.0,
+        intent_consistency=1.0,
+        strong_match=False,
+        safe_override=False
     )
 
-    confidence = calibrate_confidence(raw_confidence)
 
     return build_response(
         text,
