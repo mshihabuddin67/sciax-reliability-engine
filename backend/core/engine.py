@@ -5,6 +5,10 @@ from backend.core.behavioral_signals import detect_behavioral_signals
 from backend.core.signal_strength import calculate_signal_strength
 from backend.core.confidence_fusion import compute_final_confidence
 
+from backend.core.intent_engine import classify_intent
+from backend.core.intent_consistency import compute_intent_consistency
+from backend.core.explainability import generate_explanations
+
 from backend.core.sciax_calibration_core import (
     calibrate_confidence,
     compute_calibrated_stability_score,
@@ -78,6 +82,19 @@ def sciax_engine(prompt):
     signal_count = len(signals)
 
     signal_strength = calculate_signal_strength(signals)
+
+    # --------------------------------------------------
+    # INTENT + EXPLAINABILITY 
+    # --------------------------------------------------
+    intents = classify_intent(text)
+
+    explanations = generate_explanations(text)
+
+    intent_consistency = compute_intent_consistency(
+        intents=intents,
+        behavioral_signals=signals,
+        explainability=explanations
+    )
 
     # --------------------------------------------------
     # VARIANTS + STABILITY
