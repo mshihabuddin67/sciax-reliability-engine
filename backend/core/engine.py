@@ -69,7 +69,7 @@ def build_response(
         "analysis": build_analysis(
             stability,
             risk,
-            confidence
+            confidence, 
             intent_consistency
         )
     }
@@ -132,7 +132,8 @@ def sciax_engine(prompt):
                 "non-malicious",
                 stability,
                 "Low",
-                confidence
+                confidence,
+                intent_consistency
             )
 
     # ==================================================
@@ -157,7 +158,8 @@ def sciax_engine(prompt):
                 "violent_threat",
                 stability,
                 "High",
-                confidence
+                confidence,
+                intent_consistency
             )
 
     # ==================================================
@@ -185,7 +187,8 @@ def sciax_engine(prompt):
             "violent_threat",
             score,
             "High",
-            confidence
+            confidence,
+            intent_consistency
         )
 
         response["fuzzy_match"] = {
@@ -217,7 +220,8 @@ def sciax_engine(prompt):
                 "cyber_intrusion",
                 stability,
                 "High",
-                confidence
+                confidence,
+                intent_consistency
             )
 
     # ==================================================
@@ -242,7 +246,8 @@ def sciax_engine(prompt):
                 "fraud",
                 stability,
                 "High",
-                confidence
+                confidence,
+                intent_consistency
             )
 
     # ==================================================
