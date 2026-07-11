@@ -114,7 +114,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=0.0,
                 behavioral_signals_count=0,
-                intent_consistency=1.0,
+                intent_consistency=intent_consistency
                 safe_override=True
             )
 
@@ -139,7 +139,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
-                intent_consistency=1.0,
+                intent_consistency=intent_consistency
                 strong_match=True
             )
 
@@ -168,7 +168,7 @@ def sciax_engine(prompt):
             signal_strength=signal_strength,
             behavioral_signals_count=signal_count,
             fuzzy_score=score,
-            intent_consistency=1.0
+            intent_consistency=intent_consistency
         )
 
         response = build_response(
@@ -199,7 +199,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
-                intent_consistency=1.0,
+                intent_consistency=intent_consistency
                 strong_match=True
             )
 
@@ -224,7 +224,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
-                intent_consistency=1.0,
+                intent_consistency=intent_consistency
                 strong_match=True
             )
 
@@ -253,7 +253,7 @@ def sciax_engine(prompt):
         signal_strength=signal_strength,
         behavioral_signals_count=signal_count,
         fuzzy_score=0.0,
-        intent_consistency=1.0,
+        intent_consistency=intent_consistency
         strong_match=False,
         safe_override=False
     )
