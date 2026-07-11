@@ -36,12 +36,18 @@ def normalize_simple(text: str) -> str:
 # ANALYSIS BUILDER
 # ==================================================
 
-def build_analysis(stability, risk, confidence):
+def build_analysis(
+    stability,
+    risk,
+    confidence,
+    intent_consistency
+):
 
     return {
         "stability_score": round(stability, 2),
         "risk_level": risk,
         "confidence_score": confidence,
+        "intent_consistency": round(intent_consistency, 2),
         "uncertainty_score": round(1 - confidence, 2),
     }
 
@@ -52,7 +58,8 @@ def build_response(
     intent,
     stability,
     risk,
-    confidence
+    confidence,
+    intent_consistency
 ):
 
     return {
@@ -63,6 +70,7 @@ def build_response(
             stability,
             risk,
             confidence
+            intent_consistency
         )
     }
 
@@ -114,7 +122,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=0.0,
                 behavioral_signals_count=0,
-                intent_consistency=intent_consistency
+                intent_consistency=intent_consistency,
                 safe_override=True
             )
 
@@ -139,7 +147,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
-                intent_consistency=intent_consistency
+                intent_consistency=intent_consistency,
                 strong_match=True
             )
 
@@ -168,7 +176,7 @@ def sciax_engine(prompt):
             signal_strength=signal_strength,
             behavioral_signals_count=signal_count,
             fuzzy_score=score,
-            intent_consistency=intent_consistency
+            intent_consistency=intent_consistency,
         )
 
         response = build_response(
@@ -199,7 +207,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
-                intent_consistency=intent_consistency
+                intent_consistency=intent_consistency,
                 strong_match=True
             )
 
@@ -224,7 +232,7 @@ def sciax_engine(prompt):
                 stability=stability,
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
-                intent_consistency=intent_consistency
+                intent_consistency=intent_consistency,
                 strong_match=True
             )
 
@@ -253,7 +261,7 @@ def sciax_engine(prompt):
         signal_strength=signal_strength,
         behavioral_signals_count=signal_count,
         fuzzy_score=0.0,
-        intent_consistency=intent_consistency
+        intent_consistency=intent_consistency,
         strong_match=False,
         safe_override=False
     )
@@ -265,5 +273,6 @@ def sciax_engine(prompt):
         "unknown_or_safe",
         stability,
         risk,
-        confidence
+        confidence,
+        intent_consistency
     )
