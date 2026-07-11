@@ -27,6 +27,11 @@ def build_response(
         0.50
     )
 
+    intent_consistency = analysis.get(
+    "intent_consistency",
+    0.50
+    )
+
     uncertainty = analysis.get(
         "uncertainty_score",
         round(1 - confidence, 2)
@@ -64,6 +69,8 @@ def build_response(
             "stability_score": stability,
 
             "confidence_score": confidence,
+
+            "intent_consistency": intent_consistency,
 
             "uncertainty_score": uncertainty
         },
