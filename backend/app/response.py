@@ -22,6 +22,7 @@ def build_response(
     risk_level = analysis.get("risk_level", "Unknown")
     stability = analysis.get("stability_score", 0.50)
     confidence = analysis.get("confidence_score", 0.50)
+    intent_consistency = analysis.get("intent_consistency", 0.50)
     uncertainty = analysis.get("uncertainty_score", 0.50)
 
     # ==================================================
@@ -82,6 +83,8 @@ def build_response(
             "stability_score": round(stability, 2),
 
             "confidence_score": round(confidence, 2),
+
+            "intent_consistency": round(intent_consistency, 2),
 
             "uncertainty_score": round(uncertainty, 2),
 
