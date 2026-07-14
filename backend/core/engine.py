@@ -116,7 +116,7 @@ def sciax_engine(prompt):
     for safe in SAFE_CONTEXTS:
         if safe.lower() in text:
 
-            stability = 0.90
+            
 
             confidence = compute_final_confidence(
                 stability=stability,
@@ -142,7 +142,7 @@ def sciax_engine(prompt):
     for v in VIOLENCE_STRONG:
         if v.lower() in text:
 
-            stability = 0.85
+            
 
             confidence = compute_final_confidence(
                 stability=stability,
@@ -204,7 +204,7 @@ def sciax_engine(prompt):
     for c in CYBER_STRONG:
         if c.lower() in text:
 
-            stability = 0.80
+            
 
             confidence = compute_final_confidence(
                 stability=stability,
@@ -230,7 +230,7 @@ def sciax_engine(prompt):
     for f in FRAUD_STRONG:
         if f.lower() in text:
 
-            stability = 0.80
+            
 
             confidence = compute_final_confidence(
                 stability=stability,
