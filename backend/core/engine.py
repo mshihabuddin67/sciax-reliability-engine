@@ -97,7 +97,11 @@ def sciax_engine(prompt):
     # --------------------------------------------------
     intents = classify_intent(text)
 
-    explanations = generate_explanations(text)
+    explanations = generate_explanations(
+        text=text,
+        intents=intents,
+        behavioral_signals=signals
+    )
 
     intent_consistency = compute_intent_consistency(
         intents=intents,
