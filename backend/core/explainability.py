@@ -4,6 +4,8 @@
 
 def generate_explanations(
     text,
+    intents,
+    behavioral_signals,
     normalization_applied=False
 ):
 
