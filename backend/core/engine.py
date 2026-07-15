@@ -255,13 +255,6 @@ def sciax_engine(prompt):
     # DEFAULT LOGIC
     # ==================================================
 
-    if stability > 0.75:
-        risk = "Low"
-    elif stability > 0.55:
-        risk = "Medium"
-    else:
-        risk = "High"
-
     confidence = compute_final_confidence(
         stability=stability,
         signal_strength=signal_strength,
@@ -271,8 +264,17 @@ def sciax_engine(prompt):
         strong_match=False,
         safe_override=False
     )
+    
+    risk_result = compute_final_risk(
+        intents=intents,
+        signal_strength=signal_strength,
+        confidence=confidence,
+        stability=stability,
+        intent_consistency=intent_consistency,
+    )
 
-
+    risk = risk_result["risk_level"]
+    
     return build_response(
         text,
         variants,
