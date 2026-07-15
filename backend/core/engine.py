@@ -112,30 +112,15 @@ def sciax_engine(prompt):
     stability = compute_dynamic_stability(variants)
 
     # ==================================================
-    # SAFE CONTEXT
+    # SAFE CONTEXT DETECTION 
     # ==================================================
+
+    safe_detected = False
+
     for safe in SAFE_CONTEXTS:
         if safe.lower() in text:
-
-            
-
-            confidence = compute_final_confidence(
-                stability=stability,
-                signal_strength=0.0,
-                behavioral_signals_count=0,
-                intent_consistency=intent_consistency,
-                safe_override=True
-            )
-
-            return build_response(
-                text,
-                variants,
-                "non-malicious",
-                stability,
-                "Low",
-                confidence,
-                intent_consistency
-            )
+            safe_detected = True
+            break
 
     # ==================================================
     # HARD VIOLENCE
