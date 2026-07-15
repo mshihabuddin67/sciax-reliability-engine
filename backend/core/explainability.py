@@ -32,7 +32,7 @@ def generate_explanations(
                 "safe contextual usage detected"
             )
 
-            return explanations
+            break
 
     # ==================================================
     # DIRECT VIOLENT PHRASE MATCH
