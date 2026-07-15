@@ -4,6 +4,7 @@ from backend.core.fuzzy import best_fuzzy_match
 from backend.core.behavioral_signals import detect_behavioral_signals
 from backend.core.signal_strength import calculate_signal_strength
 from backend.core.confidence_fusion import compute_final_confidence
+from backend.core.risk_fusion import compute_final_risk
 
 from backend.core.intent_engine import classify_intent
 from backend.core.intent_consistency import compute_intent_consistency
