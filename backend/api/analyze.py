@@ -44,7 +44,11 @@ def analyze(input: InputModel):
     print("[LANGUAGE]", language)
 
     # 6. Explainability
-    explainability = generate_explanations(normalized)
+    explainability = generate_explanations(
+        text=normalized,
+        intents=intent,
+        behavioral_signals=behavioral
+    )
     print("[EXPLAINABILITY]", explainability)
 
     # 7. Final response
