@@ -142,12 +142,22 @@ def sciax_engine(prompt):
                 strong_match=True
             )
 
+            risk_result = compute_final_risk(
+                intents=intents,
+                signal_strength=signal_strength,
+                confidence=confidence,
+                stability=stability,
+                intent_consistency=intent_consistency,
+            )
+
+            risk = risk_result["risk_level"]
+            
             return build_response(
                 text,
                 variants,
                 "violent_threat",
                 stability,
-                "High",
+                risk,
                 confidence,
                 intent_consistency
             )
@@ -171,12 +181,22 @@ def sciax_engine(prompt):
             intent_consistency=intent_consistency,
         )
 
+        risk_result = compute_final_risk(
+            intents=intents,
+            signal_strength=signal_strength,
+            confidence=confidence,
+            stability=score,
+            intent_consistency=intent_consistency,
+        )
+
+        risk = risk_result["risk_level"]
+        
         response = build_response(
             text,
             variants,
             "violent_threat",
             score,
-            "High",
+            risk,
             confidence,
             intent_consistency
         )
@@ -204,12 +224,22 @@ def sciax_engine(prompt):
                 strong_match=True
             )
 
+            risk_result = compute_final_risk(
+                intents=intents,
+                signal_strength=signal_strength,
+                confidence=confidence,
+                stability=stability,
+                intent_consistency=intent_consistency,
+            )
+
+            risk = risk_result["risk_level"]
+            
             return build_response(
                 text,
                 variants,
                 "cyber_intrusion",
                 stability,
-                "High",
+                risk,
                 confidence,
                 intent_consistency
             )
@@ -230,12 +260,22 @@ def sciax_engine(prompt):
                 strong_match=True
             )
 
+            risk_result = compute_final_risk(
+                intents=intents,
+                signal_strength=signal_strength,
+                confidence=confidence,
+                stability=stability,
+                intent_consistency=intent_consistency,
+            )
+
+            risk = risk_result["risk_level"]
+            
             return build_response(
                 text,
                 variants,
                 "fraud",
                 stability,
-                "High",
+                risk,
                 confidence,
                 intent_consistency
             )
