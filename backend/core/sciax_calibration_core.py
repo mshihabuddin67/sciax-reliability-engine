@@ -6,16 +6,19 @@ import math
 # ==================================================
 def calibrate_confidence(raw_score: float) -> float:
     """
-    Converts raw heuristic score into a bounded confidence score (0–1).
-    More stable than a direct sigmoid on small ranges.
+    Converts raw heuristic score into calibrated confidence.
     """
 
     try:
-        scaled = raw_score / (1 + abs(raw_score))
-        confidence = 1 / (1 + math.exp(-scaled * 3))
+
+        raw_score = max(0.0, min(raw_score, 1.40))
+
+        confidence = 1 / (
+            1 + math.exp(-(raw_score - 0.60) * 5.0)
+        )
 
         return round(
-            max(0.0, min(confidence, 1.0)),
+            max(0.0, min(confidence, 0.99)),
             3
         )
 
@@ -99,11 +102,12 @@ def compute_uncertainty(
             / max(len(signals), 1)
         )
 
+        confidence_gap = 1 - confidence
+
         uncertainty = (
-            (1 - confidence)
-            + unique_ratio
-            + (1 - confidence)
-        ) / 3
+            confidence_gap * 0.70
+            + (1 - unique_ratio) * 0.30
+        )
 
         return round(
             max(0.0, min(uncertainty, 1.0)),
