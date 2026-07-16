@@ -43,17 +43,17 @@ def generate_explanations(
 
             if any(intent in HIGH_RISK_INTENTS for intent in intents):
 
-            explanations.append(
-                "safe context overridden by high-risk evidence"
-            )
+                explanations.append(
+                    "safe context overridden by high-risk evidence"
+                )
 
-        else:
+            else:
 
-            explanations.append(
-                "safe contextual usage detected"
-            )
+                explanations.append(
+                    "safe contextual usage detected"
+                )
 
-        break
+            break
 
     # ==================================================
     # DIRECT VIOLENT PHRASE MATCH
