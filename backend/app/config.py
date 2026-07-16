@@ -164,6 +164,62 @@ FRAUD_STRONG = [
     "verification code",
 ]
 
+# ==================================================
+# SOCIAL ENGINEERING
+# ==================================================
+
+SOCIAL_ENGINEERING_STRONG = [
+
+    "act as support",
+    "pretend to be",
+    "impersonate",
+    "fake identity",
+    "pose as",
+    "customer support",
+    "bank support",
+]
+
+# ==================================================
+# CREDENTIAL THEFT
+# ==================================================
+
+CREDENTIAL_THEFT_STRONG = [
+
+    "get password",
+    "steal password",
+    "account password",
+    "login credentials",
+    "steal credentials",
+    "password dao",
+    "send password",
+]
+
+# ==================================================
+# HARASSMENT
+# ==================================================
+
+HARASSMENT_STRONG = [
+
+    "harass",
+    "bully",
+    "keep bothering",
+    "target repeatedly",
+    "insult repeatedly",
+]
+
+# ==================================================
+# COERCION
+# ==================================================
+
+COERCION_STRONG = [
+
+    "force you",
+    "make you do",
+    "pressure you",
+    "compel you",
+    "threaten until",
+]
+
 # --------------------------------------------------
 # MULTILINGUAL RISK SIGNALS
 # --------------------------------------------------
@@ -171,8 +227,12 @@ FRAUD_STRONG = [
 MULTI_LANG_RISK = {
 
     "hack": CYBER_STRONG,
-
-    "violence": VIOLENCE_STRONG
+    "violence": VIOLENCE_STRONG,
+    "fraud": FRAUD_STRONG,
+    "social": SOCIAL_ENGINEERING_STRONG,
+    "credential": CREDENTIAL_THEFT_STRONG,
+    "harassment": HARASSMENT_STRONG,
+    "coercion": COERCION_STRONG,
 }
 
 # --------------------------------------------------
