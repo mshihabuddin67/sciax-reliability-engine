@@ -26,15 +26,34 @@ def generate_explanations(
         "game strategy"
     ]
 
+    HIGH_RISK_INTENTS = {
+
+        "violent_threat",
+        "cyber_intrusion",
+        "fraud",
+        "credential_theft",
+        "social_engineering",
+        "coercion"
+
+    }
+
     for pattern in safe_patterns:
 
         if pattern in text:
+
+            if any(intent in HIGH_RISK_INTENTS for intent in intents):
+
+            explanations.append(
+                "safe context overridden by high-risk evidence"
+            )
+
+        else:
 
             explanations.append(
                 "safe contextual usage detected"
             )
 
-            break
+        break
 
     # ==================================================
     # DIRECT VIOLENT PHRASE MATCH
