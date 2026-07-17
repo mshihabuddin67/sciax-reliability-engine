@@ -21,6 +21,7 @@ def compute_final_risk(
     confidence,
     stability,
     intent_consistency,
+    safe_detected=False,
 ):
     """
     S-CIAX Risk Fusion Engine V1
