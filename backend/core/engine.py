@@ -291,7 +291,7 @@ def sciax_engine(prompt):
         fuzzy_score=0.0,
         intent_consistency=intent_consistency,
         strong_match=False,
-        safe_override=False
+        safe_override=safe_detected
     )
     
     risk_result = compute_final_risk(
