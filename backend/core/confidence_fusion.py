@@ -70,7 +70,7 @@ def compute_final_confidence(
     # -----------------------------------------
 
     if strong_match:
-        raw += 0.10
+        raw += 0.15
 
     raw = max(0.0, min(raw, 1.20))
 
