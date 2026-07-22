@@ -20,6 +20,10 @@ from backend.app.config import (
     VIOLENCE_STRONG,
     CYBER_STRONG,
     FRAUD_STRONG,
+    SOCIAL_ENGINEERING_STRONG,
+    CREDENTIAL_THEFT_STRONG,
+    HARASSMENT_STRONG,
+    COERCION_STRONG,
     SAFE_CONTEXTS
 )
 
@@ -276,6 +280,141 @@ def sciax_engine(prompt):
                 "fraud",
                 stability,
                 risk,
+                confidence,
+                intent_consistency
+            )
+
+    # ==================================================
+    # SOCIAL ENGINEERING CHECK
+    # ==================================================
+
+    for social in SOCIAL_ENGINEERING_STRONG:
+        if social.lower() in text:
+
+            confidence = compute_final_confidence(
+                stability=stability,
+                signal_strength=signal_strength,
+                behavioral_signals_count=signal_count,
+                intent_consistency=intent_consistency,
+                strong_match=True
+            )
+
+            risk_result = compute_final_risk(
+                intents=intents,
+                signal_strength=signal_strength,
+                confidence=confidence,
+                stability=stability,
+                intent_consistency=intent_consistency,
+            )
+
+            return build_response(
+                text,
+                variants,
+                "social_engineering",
+                stability,
+                risk_result["risk_level"],
+                confidence,
+                intent_consistency
+            )
+
+
+    # ==================================================
+    # CREDENTIAL THEFT CHECK
+    # ==================================================
+
+    for credential in CREDENTIAL_THEFT_STRONG:
+        if credential.lower() in text:
+
+            confidence = compute_final_confidence(
+                stability=stability,
+                signal_strength=signal_strength,
+                behavioral_signals_count=signal_count,
+                intent_consistency=intent_consistency,
+                strong_match=True
+            )
+
+            risk_result = compute_final_risk(
+                intents=intents,
+                signal_strength=signal_strength,
+                confidence=confidence,
+                stability=stability,
+                intent_consistency=intent_consistency,
+            )
+
+            return build_response(
+                text,
+                variants,
+                "credential_theft",
+                stability,
+                risk_result["risk_level"],
+                confidence,
+                intent_consistency
+            )
+
+
+    # ==================================================
+    # HARASSMENT CHECK
+    # ==================================================
+
+    for harassment in HARASSMENT_STRONG:
+        if harassment.lower() in text:
+
+            confidence = compute_final_confidence(
+                stability=stability,
+                signal_strength=signal_strength,
+                behavioral_signals_count=signal_count,
+                intent_consistency=intent_consistency,
+                strong_match=True
+            )
+
+            risk_result = compute_final_risk(
+                intents=intents,
+                signal_strength=signal_strength,
+                confidence=confidence,
+                stability=stability,
+                intent_consistency=intent_consistency,
+            )
+
+            return build_response(
+                text,
+                variants,
+                "harassment",
+                stability,
+                risk_result["risk_level"],
+                confidence,
+                intent_consistency
+            )
+
+
+    # ==================================================
+    # COERCION CHECK
+    # ==================================================
+
+    for coercion in COERCION_STRONG:
+        if coercion.lower() in text:
+
+            confidence = compute_final_confidence(
+                stability=stability,
+                signal_strength=signal_strength,
+                behavioral_signals_count=signal_count,
+                intent_consistency=intent_consistency,
+                strong_match=True
+            )
+
+            risk_result = compute_final_risk(
+                intents=intents,
+                signal_strength=signal_strength,
+                confidence=confidence,
+                stability=stability,
+                intent_consistency=intent_consistency,
+            )
+
+            return build_response(
+                text,
+                variants,
+                "coercion",
+                stability,
+                risk_result["risk_level"],
                 confidence,
                 intent_consistency
             )
