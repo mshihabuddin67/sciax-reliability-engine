@@ -14,7 +14,7 @@ def calibrate_confidence(raw_score: float) -> float:
         raw_score = max(0.0, min(raw_score, 1.40))
 
         confidence = 1 / (
-            1 + math.exp(-(raw_score - 0.60) * 5.0)
+            1 + math.exp(-(raw_score - 0.55) * 5.5)
         )
 
         return round(
