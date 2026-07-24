@@ -29,7 +29,7 @@ def compute_final_risk(
     confidence,
     stability,
     intent_consistency,
-    safe_detected=False,
+    safe_detected=safe_detected,
 ):
 
     if not intents:
