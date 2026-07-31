@@ -175,6 +175,24 @@ def classify_intent(text):
     intents = list(dict.fromkeys(intents))
 
     # --------------------------------------------------
+    # REMOVE CONTRADICTORY SAFE LABEL
+    # --------------------------------------------------
+
+    HIGH_RISK_INTENTS = {
+        "violent_threat",
+        "cyber_intrusion",
+        "fraud",
+        "credential_theft",
+        "social_engineering",
+    }
+
+    if (
+        "non-malicious" in intents and
+        any(intent in HIGH_RISK_INTENTS for intent in intents)
+    ):
+        intents.remove("non-malicious")
+
+    # --------------------------------------------------
     # DEFAULT
     # --------------------------------------------------
 
