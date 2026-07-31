@@ -41,6 +41,22 @@ def compute_intent_consistency(
                 score += 0.10
 
         # ==================================================
+        # CONTRADICTION CHECK
+        # ==================================================
+
+        if (
+            "non-malicious" in intents and
+            any(intent in HIGH_RISK_INTENTS for intent in intents)
+        ):
+            score -= 0.40
+
+        if any(
+            "safe context overridden" in e.lower()
+            for e in explainability
+        ):
+            score += 0.05
+        
+        # ==================================================
         # VIOLENCE
         # ==================================================
 
