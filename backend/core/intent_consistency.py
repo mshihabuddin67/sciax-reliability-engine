@@ -2,6 +2,14 @@
 # S-CIAX INTENT CONSISTENCY ENGINE V3
 # ==================================================
 
+HIGH_RISK_INTENTS = {
+    "violent_threat",
+    "cyber_intrusion",
+    "fraud",
+    "credential_theft",
+    "social_engineering",
+}
+
 def compute_intent_consistency(
     intents,
     behavioral_signals,
