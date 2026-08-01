@@ -1,5 +1,7 @@
 def detect_language_profile(text):
 
+    languages = []
+    
     # ----------------------------------
     # Bangla Script
     # ----------------------------------
@@ -44,7 +46,18 @@ def detect_language_profile(text):
         "kore",
 
         "nibo",
-        "nebo"
+        "nebo",
+        
+        "tomar",
+        "tumi",
+        
+        "hoy",
+        "mon",
+        "dibe",
+        "dibi",
+        "koris",
+        "morbi",
+        "dekhis"
     ]
 
     if any(
@@ -72,7 +85,10 @@ def detect_language_profile(text):
         "dekh lunga",
 
         "karunga",
-        "nahi"
+        "nahi",
+        "maar",
+        "dunga",
+        "mat"
     ]
 
     if any(
