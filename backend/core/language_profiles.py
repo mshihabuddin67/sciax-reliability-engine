@@ -5,16 +5,16 @@ def detect_language_profile(text):
     # ----------------------------------
 
     if any("\u0980" <= c <= "\u09FF" for c in text):
-
-        return ["Bangla"]
+        languages.append("Bangla")
+        
 
     # ----------------------------------
     # Hindi Script
     # ----------------------------------
 
     if any("\u0900" <= c <= "\u097F" for c in text):
-
-        return ["Hindi"]
+        languages.append("Hindi")
+        
 
     text_lower = text.lower()
 
@@ -52,7 +52,7 @@ def detect_language_profile(text):
         for marker in roman_bangla_markers
     ):
 
-        return ["Romanized Bangla"]
+        languages.append("Romanized Bangla")
 
     # ----------------------------------
     # Roman Hindi
@@ -80,10 +80,34 @@ def detect_language_profile(text):
         for marker in roman_hindi_markers
     ):
 
-        return ["Roman Hindi"]
+        languages.append("Roman Hindi")
 
     # ----------------------------------
-    # Default
+    # English Detection
     # ----------------------------------
 
-    return ["English"]
+    english_markers = [
+        "force",
+        "release",
+        "hack",
+        "system",
+        "sleep",
+        "schedule",
+        "you",
+        "will"
+    ]
+
+    if any(
+        marker in text_lower
+        for marker in english_markers
+    ):
+        languages.append("English")
+
+    # ----------------------------------
+    # Final Output
+    # ----------------------------------
+
+    if not languages:
+        languages.append("English")
+
+    return list(dict.fromkeys(languages))
