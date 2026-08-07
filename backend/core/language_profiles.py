@@ -1,14 +1,19 @@
 def detect_language_profile(text):
 
     languages = []
-    
+
+    text_lower = text.lower()
+
+    bangla_score = 0
+    hindi_score = 0
+    english_score = 0
+
     # ----------------------------------
     # Bangla Script
     # ----------------------------------
 
     if any("\u0980" <= c <= "\u09FF" for c in text):
         languages.append("Bangla")
-        
 
     # ----------------------------------
     # Hindi Script
@@ -16,9 +21,6 @@ def detect_language_profile(text):
 
     if any("\u0900" <= c <= "\u097F" for c in text):
         languages.append("Hindi")
-        
-
-    text_lower = text.lower()
 
     # ----------------------------------
     # Romanized Bangla
@@ -29,6 +31,9 @@ def detect_language_profile(text):
         "toke",
         "tore",
         "tomake",
+        "tomar",
+        "tumi",
+
         "ami",
 
         "shesh",
@@ -37,35 +42,38 @@ def detect_language_profile(text):
         "felbo",
 
         "marbo",
+        "morbi",
         "khun",
 
         "dibo",
         "debo",
+        "dibe",
+        "dibi",
 
         "korbo",
         "kore",
+        "koris",
 
         "nibo",
         "nebo",
-        
-        "tomar",
-        "tumi",
-        
+
+        "dekhis",
+        "hobe",
+        "hobena",
         "hoy",
         "mon",
-        "dibe",
-        "dibi",
-        "koris",
-        "morbi",
-        "dekhis"
+        "valo",
+        "bhalo",
+
+        "nis",
+        "re",
+        "pagol",
+        "ekdin"
     ]
 
-    if any(
-        marker in text_lower
-        for marker in roman_bangla_markers
-    ):
-
-        languages.append("Romanized Bangla")
+    for marker in roman_bangla_markers:
+        if marker in text_lower:
+            bangla_score += 1
 
     # ----------------------------------
     # Roman Hindi
@@ -79,48 +87,74 @@ def detect_language_profile(text):
 
         "mar dunga",
         "maar dunga",
+        "dunga",
 
         "khatam kar dunga",
-
         "dekh lunga",
 
         "karunga",
         "nahi",
-        "maar",
-        "dunga",
         "mat"
     ]
 
-    if any(
-        marker in text_lower
-        for marker in roman_hindi_markers
-    ):
-
-        languages.append("Roman Hindi")
+    for marker in roman_hindi_markers:
+        if marker in text_lower:
+            hindi_score += 1
 
     # ----------------------------------
-    # English Detection
+    # English
     # ----------------------------------
 
     english_markers = [
-        "force",
-        "release",
+
         "hack",
         "system",
         "sleep",
         "schedule",
+
+        "force",
+        "release",
+
+        "kill",
         "you",
-        "will"
+        "will",
+
+        "password",
+        "account",
+        "credential",
+
+        "otp",
+        "support",
+
+        "pretend",
+        "impersonate",
+
+        "breach",
+        "exploit",
+
+        "harass",
+        "bully"
     ]
 
-    if any(
-        marker in text_lower
-        for marker in english_markers
-    ):
+    for marker in english_markers:
+        if marker in text_lower:
+            english_score += 1
+
+    # ----------------------------------
+    # Score Threshold
+    # ----------------------------------
+
+    if bangla_score >= 2:
+        languages.append("Romanized Bangla")
+
+    if hindi_score >= 2:
+        languages.append("Roman Hindi")
+
+    if english_score >= 2:
         languages.append("English")
 
     # ----------------------------------
-    # Final Output
+    # Default
     # ----------------------------------
 
     if not languages:
