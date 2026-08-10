@@ -2,7 +2,7 @@ def detect_language_profile(text):
 
     languages = []
 
-    text_lower = text.lower()
+    text_lower = text.lower().strip()
 
     bangla_score = 0
     hindi_score = 0
