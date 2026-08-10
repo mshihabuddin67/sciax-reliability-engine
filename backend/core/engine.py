@@ -92,7 +92,6 @@ def build_response(
 def sciax_engine(prompt):
 
     text = normalize_text(prompt)
-    
     language_profile = detect_language_profile(text)
 
     # --------------------------------------------------
