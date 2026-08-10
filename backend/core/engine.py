@@ -67,7 +67,8 @@ def build_response(
     stability,
     risk,
     confidence,
-    intent_consistency
+    intent_consistency,
+    language_profile
 ):
 
     return {
@@ -91,6 +92,7 @@ def build_response(
 def sciax_engine(prompt):
 
     text = normalize_text(prompt)
+    
     language_profile = detect_language_profile(text)
 
     # --------------------------------------------------
