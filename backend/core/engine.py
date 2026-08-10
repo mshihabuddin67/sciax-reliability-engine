@@ -1,4 +1,5 @@
 from backend.core.normalization import normalize_text
+from backend.core.language_profiles import detect_language_profile
 
 from backend.core.perturbation import generate_variants
 from backend.core.stability_engine import compute_dynamic_stability
@@ -89,6 +90,7 @@ def build_response(
 def sciax_engine(prompt):
 
     text = normalize_text(prompt)
+    language_profile = detect_language_profile(text)
 
     # --------------------------------------------------
     # SIGNALS
