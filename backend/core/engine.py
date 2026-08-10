@@ -72,7 +72,6 @@ def build_response(
 
     return {
         "prompt": text,
-        "language_profile": language_profile,
         "variants": variants,
         "intent_classification": [intent],
         "analysis": build_analysis(
