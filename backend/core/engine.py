@@ -169,7 +169,8 @@ def sciax_engine(prompt):
                 stability,
                 risk,
                 confidence,
-                intent_consistency
+                intent_consistency,
+                language_profile
             )
 
     # ==================================================
@@ -208,7 +209,8 @@ def sciax_engine(prompt):
             score,
             risk,
             confidence,
-            intent_consistency
+            intent_consistency,
+            language_profile 
         )
 
         response["fuzzy_match"] = {
@@ -251,7 +253,8 @@ def sciax_engine(prompt):
                 stability,
                 risk,
                 confidence,
-                intent_consistency
+                intent_consistency,
+                language_profile 
             )
 
     # ==================================================
@@ -287,7 +290,8 @@ def sciax_engine(prompt):
                 stability,
                 risk,
                 confidence,
-                intent_consistency
+                intent_consistency,
+                language_profile 
             )
 
     # ==================================================
@@ -320,7 +324,8 @@ def sciax_engine(prompt):
                 stability,
                 risk_result["risk_level"],
                 confidence,
-                intent_consistency
+                intent_consistency,
+                language_profile 
             )
 
 
@@ -354,7 +359,8 @@ def sciax_engine(prompt):
                 stability,
                 risk_result["risk_level"],
                 confidence,
-                intent_consistency
+                intent_consistency, 
+                language_profile 
             )
 
 
@@ -388,7 +394,8 @@ def sciax_engine(prompt):
                 stability,
                 risk_result["risk_level"],
                 confidence,
-                intent_consistency
+                intent_consistency, 
+                language_profile 
             )
 
 
@@ -422,7 +429,8 @@ def sciax_engine(prompt):
                 stability,
                 risk_result["risk_level"],
                 confidence,
-                intent_consistency
+                intent_consistency, 
+                language_profile 
             )
 
     # ==================================================
@@ -456,5 +464,6 @@ def sciax_engine(prompt):
         stability,
         risk,
         confidence,
-        intent_consistency
+        intent_consistency,
+        language_profile 
     )
