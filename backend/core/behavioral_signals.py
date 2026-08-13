@@ -2,9 +2,102 @@
 # S-CIAX BEHAVIORAL SIGNAL ENGINE
 # ==================================================
 
+from backend.patterns.registry import PATTERN_REGISTRY
+
+
+# ==================================================
+# REGISTRY HELPERS
+# ==================================================
+
+def _extract_pattern_value(pattern):
+    """
+    Supports registry entries in common formats:
+
+    1. "pattern text"
+
+    2. {
+        "pattern": "pattern text",
+        ...
+    }
+
+    3. {
+        "text": "pattern text",
+        ...
+    }
+    """
+
+    if isinstance(pattern, str):
+        return pattern
+
+    if isinstance(pattern, dict):
+        value = pattern.get("pattern")
+
+        if value is None:
+            value = pattern.get("text")
+
+        if isinstance(value, str):
+            return value
+
+    return None
+
+
+def _registry_matches(text, patterns):
+    """
+    Return True if at least one registered pattern matches.
+
+    Matching is intentionally conservative at this stage.
+    Semantic/structural matching will be added later.
+    """
+
+    for pattern in patterns or []:
+
+        pattern_text = _extract_pattern_value(pattern)
+
+        if not pattern_text:
+            continue
+
+        pattern_text = pattern_text.lower().strip()
+
+        if pattern_text and pattern_text in text:
+            return True
+
+    return False
+
+
+def _add_registry_signal(
+    text,
+    signals,
+    category,
+    signal_name,
+):
+    """
+    Connect one Pattern Registry category to a behavioral signal.
+
+    Existing signals are preserved.
+    Registry matches only add evidence.
+    """
+
+    patterns = PATTERN_REGISTRY.get(category, [])
+
+    if _registry_matches(text, patterns):
+
+        if signal_name not in signals:
+            signals.append(signal_name)
+
+
+# ==================================================
+# MAIN SIGNAL DETECTOR
+# ==================================================
+
 def detect_behavioral_signals(text):
 
+    if not isinstance(text, str):
+        return []
+
     text = text.lower().strip()
+
+    if not text:
+        return []
 
     signals = []
 
@@ -211,6 +304,131 @@ def detect_behavioral_signals(text):
     ]):
 
         signals.append("coercion")
+
+    # ==================================================
+    # PATTERN REGISTRY INTEGRATION
+    # ==================================================
+
+    # --------------------------------------------------
+    # VIOLENCE PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "violence",
+        "violent aggression",
+    )
+
+    # --------------------------------------------------
+    # CYBER PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "cyber",
+        "cyber intrusion intent",
+    )
+
+    # --------------------------------------------------
+    # FRAUD PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "fraud",
+        "fraud intent",
+    )
+
+    # --------------------------------------------------
+    # SOCIAL ENGINEERING PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "social_engineering",
+        "social engineering",
+    )
+
+    # --------------------------------------------------
+    # CONTEXTUAL THREAT PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "contextual_threats",
+        "implicit threat escalation",
+    )
+
+    # --------------------------------------------------
+    # CROSS-SCRIPT PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "cross_script",
+        "cross-script behavioral pattern",
+    )
+
+    # --------------------------------------------------
+    # OBFUSCATION PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "obfuscation",
+        "obfuscation pattern",
+    )
+
+    # --------------------------------------------------
+    # SARCASM PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "sarcasm",
+        "sarcasm pattern",
+    )
+
+    # --------------------------------------------------
+    # AMBIGUITY PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "ambiguity",
+        "ambiguity pattern",
+    )
+
+    # --------------------------------------------------
+    # MULTI-INTENT PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "multi_intent",
+        "multi-intent pattern",
+    )
+
+    # --------------------------------------------------
+    # BENIGN PATTERNS
+    # --------------------------------------------------
+
+    _add_registry_signal(
+        text,
+        signals,
+        "benign",
+        "benign optimization context",
+    )
 
     # --------------------------------------------------
     # REMOVE DUPLICATES (KEEP ORDER)
