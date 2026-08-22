@@ -18,6 +18,7 @@ from .sarcasm import SARCASM_PATTERNS
 from .ambiguity import AMBIGUITY_PATTERNS
 from .multi_intent import MULTI_INTENT_PATTERNS
 from .benign import BENIGN_PATTERNS
+from .contextual_safety import CONTEXTUAL_SAFETY_PATTERNS
 
 
 PATTERN_REGISTRY = {
@@ -43,5 +44,7 @@ PATTERN_REGISTRY = {
     "multi_intent": MULTI_INTENT_PATTERNS,
 
     "benign": BENIGN_PATTERNS,
+
+    "contextual_safety": CONTEXTUAL_SAFETY_PATTERNS,
 
 }
