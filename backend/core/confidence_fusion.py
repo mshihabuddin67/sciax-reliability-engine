@@ -13,7 +13,7 @@ def compute_final_confidence(
     safe_override=False
 ):
     """
-    S-CIAX Confidence Fusion Engine V3
+    S-CIAX Confidence Fusion Engine V4
 
     Evidence Sources
     ----------------
@@ -22,58 +22,92 @@ def compute_final_confidence(
     • Behavioral Signals
     • Fuzzy Match
     • Intent Consistency
+    • Evidence Quality
+    • Contradiction Score
     • Strong Rule Match
-    • Safe Override
+    • Safe Context
     """
 
     # -----------------------------------------
     # Clamp inputs
     # -----------------------------------------
 
-    stability = max(0.0, min(stability, 1.0))
-    signal_strength = max(0.0, min(signal_strength, 1.0))
-    fuzzy_score = max(0.0, min(fuzzy_score, 1.0))
-    intent_consistency = max(0.0, min(intent_consistency, 1.0))
+    stability = max(0.0, min(float(stability), 1.0))
+    signal_strength = max(0.0, min(float(signal_strength), 1.0))
+    fuzzy_score = max(0.0, min(float(fuzzy_score), 1.0))
+    intent_consistency = max(
+        0.0,
+        min(float(intent_consistency), 1.0)
+    )
+
+    evidence_quality = max(
+        0.0,
+        min(float(evidence_quality), 1.0)
+    )
+
+    contradiction_score = max(
+        0.0,
+        min(float(contradiction_score), 1.0)
+    )
 
     # -----------------------------------------
-    # Safe Override
-    # -----------------------------------------
-
-    if safe_override:
-
-        raw = (
-            stability * 0.60 +
-            intent_consistency * 0.40
-        )
-
-        return calibrate_confidence(raw)
-
-    # -----------------------------------------
-    # Base Evidence
+    # Base Evidence Fusion
     # -----------------------------------------
 
     raw = 0.0
 
-    raw += stability * 0.35
+    raw += stability * 0.25
 
-    raw += signal_strength * 0.25
+    raw += signal_strength * 0.20
 
     raw += min(
-        behavioral_signals_count * 0.05,
-        0.15
+        behavioral_signals_count * 0.04,
+        0.12
     )
 
-    raw += fuzzy_score * 0.10
+    raw += fuzzy_score * 0.08
 
     raw += intent_consistency * 0.15
 
     # -----------------------------------------
-    # Strong Match Boost
+    # Evidence Quality
+    # -----------------------------------------
+
+    raw += evidence_quality * 0.20
+
+    # -----------------------------------------
+    # Contradiction Penalty
+    # -----------------------------------------
+
+    raw -= contradiction_score * 0.10
+
+    # -----------------------------------------
+    # Strong Match
     # -----------------------------------------
 
     if strong_match:
-        raw += 0.15
+        raw += 0.10
 
-    raw = max(0.0, min(raw, 1.20))
+    # -----------------------------------------
+    # Safe Context
+    #
+    # Safe context contributes evidence,
+    # but does NOT erase contradictory evidence.
+    # -----------------------------------------
+
+    if safe_override:
+
+        raw += 0.05
+
+        # Strong contradiction prevents
+        # benign context from dominating.
+        if contradiction_score >= 0.30:
+            raw -= 0.05
+
+    # -----------------------------------------
+    # Final Bound
+    # -----------------------------------------
+
+    raw = max(0.0, min(raw, 1.0))
 
     return calibrate_confidence(raw)
