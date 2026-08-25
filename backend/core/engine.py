@@ -12,6 +12,7 @@ from backend.core.risk_fusion import compute_final_risk
 from backend.core.intent_engine import classify_intent
 from backend.core.intent_consistency import compute_intent_consistency
 from backend.core.explainability import generate_explanations
+from backend.core.evidence import analyze_evidence
 
 from backend.core.sciax_calibration_core import (
     calibrate_confidence,
@@ -68,7 +69,8 @@ def build_response(
     risk,
     confidence,
     intent_consistency,
-    language_profile
+    language_profile,
+    evidence_result=None
 ):
 
     return {
@@ -81,7 +83,10 @@ def build_response(
             risk,
             confidence, 
             intent_consistency
-        )
+        ),
+
+        "evidence": evidence_result
+        
     }
 
 
@@ -112,13 +117,27 @@ def sciax_engine(prompt):
         intents=intents,
         behavioral_signals=signals
     )
-
+    
     intent_consistency = compute_intent_consistency(
         intents=intents,
         behavioral_signals=signals,
         explainability=explanations
     )
 
+    # --------------------------------------------------
+    # EVIDENCE ENGINE
+    # --------------------------------------------------
+
+    evidence_result = analyze_evidence(
+        text=text,
+        signals=signals,
+        intents=intents,
+        explanations=explanations
+    )
+
+    evidence_quality = evidence_result["global_evidence_quality"]
+    contradiction_score = evidence_result["contradiction_score"]
+    
     # --------------------------------------------------
     # VARIANTS + STABILITY
     # --------------------------------------------------
@@ -170,7 +189,8 @@ def sciax_engine(prompt):
                 risk,
                 confidence,
                 intent_consistency,
-                language_profile
+                language_profile,
+                evidence_result
             )
 
     # ==================================================
@@ -210,7 +230,8 @@ def sciax_engine(prompt):
             risk,
             confidence,
             intent_consistency,
-            language_profile 
+            language_profile,
+            evidence_result
         )
 
         response["fuzzy_match"] = {
@@ -254,7 +275,8 @@ def sciax_engine(prompt):
                 risk,
                 confidence,
                 intent_consistency,
-                language_profile 
+                language_profile,
+                evidence_result 
             )
 
     # ==================================================
@@ -291,7 +313,8 @@ def sciax_engine(prompt):
                 risk,
                 confidence,
                 intent_consistency,
-                language_profile 
+                language_profile, 
+                evidence_result 
             )
 
     # ==================================================
@@ -325,7 +348,8 @@ def sciax_engine(prompt):
                 risk_result["risk_level"],
                 confidence,
                 intent_consistency,
-                language_profile 
+                language_profile, 
+                evidence_result 
             )
 
 
@@ -360,7 +384,8 @@ def sciax_engine(prompt):
                 risk_result["risk_level"],
                 confidence,
                 intent_consistency, 
-                language_profile 
+                language_profile, 
+                evidence_result 
             )
 
 
@@ -395,7 +420,8 @@ def sciax_engine(prompt):
                 risk_result["risk_level"],
                 confidence,
                 intent_consistency, 
-                language_profile 
+                language_profile, 
+                evidence_result 
             )
 
 
@@ -430,7 +456,8 @@ def sciax_engine(prompt):
                 risk_result["risk_level"],
                 confidence,
                 intent_consistency, 
-                language_profile 
+                language_profile, 
+                evidence_result 
             )
 
     # ==================================================
@@ -465,5 +492,6 @@ def sciax_engine(prompt):
         risk,
         confidence,
         intent_consistency,
-        language_profile 
+        language_profile, 
+        evidence_result 
     )
