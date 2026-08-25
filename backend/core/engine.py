@@ -168,6 +168,8 @@ def sciax_engine(prompt):
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
                 intent_consistency=intent_consistency,
+                evidence_quality=evidence_quality,
+                contradiction_score=contradiction_score,
                 strong_match=True
             )
 
@@ -210,6 +212,9 @@ def sciax_engine(prompt):
             behavioral_signals_count=signal_count,
             fuzzy_score=score,
             intent_consistency=intent_consistency,
+            evidence_quality=evidence_quality,
+            contradiction_score=contradiction_score,
+            strong_match=False
         )
 
         risk_result = compute_final_risk(
@@ -254,6 +259,8 @@ def sciax_engine(prompt):
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
                 intent_consistency=intent_consistency,
+                evidence_quality=evidence_quality,
+                contradiction_score=contradiction_score,
                 strong_match=True
             )
 
@@ -292,6 +299,8 @@ def sciax_engine(prompt):
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
                 intent_consistency=intent_consistency,
+                evidence_quality=evidence_quality,
+                contradiction_score=contradiction_score,
                 strong_match=True
             )
 
@@ -329,6 +338,8 @@ def sciax_engine(prompt):
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
                 intent_consistency=intent_consistency,
+                evidence_quality=evidence_quality,
+                contradiction_score=contradiction_score,
                 strong_match=True
             )
 
@@ -365,6 +376,8 @@ def sciax_engine(prompt):
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
                 intent_consistency=intent_consistency,
+                evidence_quality=evidence_quality,
+                contradiction_score=contradiction_score,
                 strong_match=True
             )
 
@@ -401,6 +414,8 @@ def sciax_engine(prompt):
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
                 intent_consistency=intent_consistency,
+                evidence_quality=evidence_quality,
+                contradiction_score=contradiction_score,
                 strong_match=True
             )
 
@@ -437,6 +452,8 @@ def sciax_engine(prompt):
                 signal_strength=signal_strength,
                 behavioral_signals_count=signal_count,
                 intent_consistency=intent_consistency,
+                evidence_quality=evidence_quality,
+                contradiction_score=contradiction_score,
                 strong_match=True
             )
 
@@ -470,6 +487,8 @@ def sciax_engine(prompt):
         behavioral_signals_count=signal_count,
         fuzzy_score=0.0,
         intent_consistency=intent_consistency,
+        evidence_quality=evidence_quality,
+        contradiction_score=contradiction_score,
         strong_match=False,
         safe_override=safe_detected
     )
