@@ -7,6 +7,8 @@ def compute_final_confidence(
     behavioral_signals_count=0,
     fuzzy_score=0.0,
     intent_consistency=1.0,
+    evidence_quality=0.0,
+    contradiction_score=0.0,
     strong_match=False,
     safe_override=False
 ):
