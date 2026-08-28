@@ -180,8 +180,6 @@ def sciax_engine(prompt):
                 stability=stability,
                 intent_consistency=intent_consistency,
                 safe_detected=safe_detected,
-                evidence_quality=evidence_quality,
-                contradiction_score=contradiction_score,
             )
 
             risk = risk_result["risk_level"]
@@ -227,8 +225,6 @@ def sciax_engine(prompt):
             stability=score,
             intent_consistency=intent_consistency,
             safe_detected=safe_detected,
-            evidence_quality=evidence_quality,
-            contradiction_score=contradiction_score,
         )
 
         risk = risk_result["risk_level"]
@@ -277,8 +273,6 @@ def sciax_engine(prompt):
                 stability=stability,
                 intent_consistency=intent_consistency,
                 safe_detected=safe_detected,
-                evidence_quality=evidence_quality,
-                contradiction_score=contradiction_score,
             )
 
             risk = risk_result["risk_level"]
@@ -320,8 +314,6 @@ def sciax_engine(prompt):
                 stability=stability,
                 intent_consistency=intent_consistency,
                 safe_detected=safe_detected,
-                evidence_quality=evidence_quality,
-                contradiction_score=contradiction_score,
             )
 
             risk = risk_result["risk_level"]
@@ -362,8 +354,6 @@ def sciax_engine(prompt):
                 stability=stability,
                 intent_consistency=intent_consistency,
                 safe_detected=safe_detected,
-                evidence_quality=evidence_quality,
-                contradiction_score=contradiction_score,
             )
 
             return build_response(
@@ -403,8 +393,6 @@ def sciax_engine(prompt):
                 stability=stability,
                 intent_consistency=intent_consistency,
                 safe_detected=safe_detected,
-                evidence_quality=evidence_quality,
-                contradiction_score=contradiction_score,
             )
 
             return build_response(
@@ -444,8 +432,6 @@ def sciax_engine(prompt):
                 stability=stability,
                 intent_consistency=intent_consistency,
                 safe_detected=safe_detected,
-                evidence_quality=evidence_quality,
-                contradiction_score=contradiction_score,
             )
 
             return build_response(
@@ -485,8 +471,6 @@ def sciax_engine(prompt):
                 stability=stability,
                 intent_consistency=intent_consistency,
                 safe_detected=safe_detected,
-                evidence_quality=evidence_quality,
-                contradiction_score=contradiction_score,
             )
 
             return build_response(
@@ -524,8 +508,6 @@ def sciax_engine(prompt):
         stability=stability,
         intent_consistency=intent_consistency,
         safe_detected=safe_detected,
-        evidence_quality=evidence_quality,
-        contradiction_score=contradiction_score,
     )
 
     risk = risk_result["risk_level"]
