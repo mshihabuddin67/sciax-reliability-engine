@@ -10,7 +10,6 @@ Detection logic is implemented elsewhere.
 
 CYBER_PATTERNS = [
     # Generic
-    "hack",
     "hacking",
     "exploit",
     "payload",
