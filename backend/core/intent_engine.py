@@ -130,6 +130,8 @@ def classify_intent(text):
         "life hack",
         "productivity hack",
         "game strategy"
+        "na"
+        "না"
     ]
 
     # --------------------------------------------------
