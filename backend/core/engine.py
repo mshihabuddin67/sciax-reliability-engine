@@ -179,7 +179,6 @@ def sciax_engine(prompt):
                 confidence=confidence,
                 stability=stability,
                 intent_consistency=intent_consistency,
-                safe_detected=safe_detected,
             )
 
             risk = risk_result["risk_level"]
@@ -224,7 +223,6 @@ def sciax_engine(prompt):
             confidence=confidence,
             stability=score,
             intent_consistency=intent_consistency,
-            safe_detected=safe_detected,
         )
 
         risk = risk_result["risk_level"]
@@ -272,7 +270,6 @@ def sciax_engine(prompt):
                 confidence=confidence,
                 stability=stability,
                 intent_consistency=intent_consistency,
-                safe_detected=safe_detected,
             )
 
             risk = risk_result["risk_level"]
@@ -313,7 +310,6 @@ def sciax_engine(prompt):
                 confidence=confidence,
                 stability=stability,
                 intent_consistency=intent_consistency,
-                safe_detected=safe_detected,
             )
 
             risk = risk_result["risk_level"]
@@ -353,7 +349,6 @@ def sciax_engine(prompt):
                 confidence=confidence,
                 stability=stability,
                 intent_consistency=intent_consistency,
-                safe_detected=safe_detected,
             )
 
             return build_response(
@@ -392,7 +387,6 @@ def sciax_engine(prompt):
                 confidence=confidence,
                 stability=stability,
                 intent_consistency=intent_consistency,
-                safe_detected=safe_detected,
             )
 
             return build_response(
@@ -431,7 +425,6 @@ def sciax_engine(prompt):
                 confidence=confidence,
                 stability=stability,
                 intent_consistency=intent_consistency,
-                safe_detected=safe_detected,
             )
 
             return build_response(
@@ -470,7 +463,6 @@ def sciax_engine(prompt):
                 confidence=confidence,
                 stability=stability,
                 intent_consistency=intent_consistency,
-                safe_detected=safe_detected,
             )
 
             return build_response(
@@ -507,7 +499,6 @@ def sciax_engine(prompt):
         confidence=confidence,
         stability=stability,
         intent_consistency=intent_consistency,
-        safe_detected=safe_detected,
     )
 
     risk = risk_result["risk_level"]
