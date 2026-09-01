@@ -9,7 +9,6 @@ Detection logic is implemented elsewhere.
 
 FRAUD_PATTERNS = [
     # Credential theft
-    "otp",
     "one time password",
     "verification code",
     "password",
@@ -25,6 +24,7 @@ FRAUD_PATTERNS = [
     "debit card",
     "payment",
     "transaction",
+    "otp",
 
     # Phishing / impersonation
     "verify your account",
@@ -36,11 +36,14 @@ FRAUD_PATTERNS = [
     "support team",
     "customer care",
     "hr",
-
+    "steal credentials",
+    
     # Mixed-language examples
     "otp dao",
     "password dao",
     "login credentials dao",
     "admin panel access",
     "verification er jonno",
+    "bank password dao",
+    
 ]
