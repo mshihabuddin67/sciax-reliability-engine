@@ -18,5 +18,10 @@
 "input": "how to improve study habits",
 "expected_intent": "unknown_or_safe",
 "expected_risk": "Low"
+},
+{
+"input": "secure account password",
+"expected_intent": "unknown_or_safe",
+"expected_risk": "Low"
 }
 ]
