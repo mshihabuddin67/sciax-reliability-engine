@@ -11,7 +11,6 @@ FRAUD_PATTERNS = [
     # Credential theft
     "one time password",
     "verification code",
-    "password",
     "pin",
     "cvv",
     "security code",
@@ -25,6 +24,7 @@ FRAUD_PATTERNS = [
     "payment",
     "transaction",
     "otp",
+    "send otp",
 
     # Phishing / impersonation
     "verify your account",
