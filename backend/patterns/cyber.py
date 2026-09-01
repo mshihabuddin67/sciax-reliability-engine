@@ -25,9 +25,7 @@ CYBER_PATTERNS = [
     # Credentials
     "login",
     "username",
-    "password",
     "credential",
-    "otp",
     "access token",
     "session cookie",
 
@@ -37,4 +35,15 @@ CYBER_PATTERNS = [
     "hack kore dibo",
     "login info",
     "login details",
+    "hack the system",
+    "bypass security",
+    "exploit vulnerability"
+    "system hack korbo"
+    "system hack karunga"
+    "breach server"
+    "data churi korbo" 
+    "সিস্টেম হ্যাক করব"
+    "সিস্টেম হ্যাক করবো"
+    "ডেটা চুরি করব"
+    
 ]
