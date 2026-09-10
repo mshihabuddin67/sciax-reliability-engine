@@ -3,7 +3,7 @@
 # ==================================================
 
 from backend.patterns.registry import PATTERN_REGISTRY
-from backend.core.contextual_safety import summarize_context
+from backend.patterns.contextual_safety import summarize_context
 
 
 # ==================================================
