@@ -332,8 +332,7 @@ def _extract_explainability_evidence(
                     )
                 )
 
-    return evidence
-
+    return evidence 
 
 # ============================================================
 # CONTEXTUAL SAFETY EVIDENCE
@@ -344,21 +343,26 @@ def _extract_context_evidence(
     intents: Iterable[Any],
 ) -> List[Dict[str, Any]]:
     """
-    Consume contextual_safety.py as the single source of truth.
+    Extract contextual-safety evidence from the centralized
+    Pattern Registry.
 
-    Context is NOT a final override.
+    Context is evidence only.
+    It does NOT make the final risk decision.
 
-    Example:
-        "secure account password"
-            -> defensive_security supports non-malicious
-
-        "secure account password then steal data"
-            -> defensive_security conflicts with credential/cyber intent
-
-    This layer only records that relationship.
+    Contextual patterns can provide independent evidence even
+    when the Intent Engine did not initially classify the same
+    intent.
     """
 
     evidence: List[Dict[str, Any]] = []
+
+    if not isinstance(text, str):
+        return evidence
+
+    normalized_text = _normalize(text)
+
+    if not normalized_text:
+        return evidence
 
     intent_list = [
         _normalize(intent)
@@ -366,116 +370,161 @@ def _extract_context_evidence(
         if _normalize(intent)
     ]
 
-    if not text:
-        return evidence
+    contextual_patterns = PATTERN_REGISTRY.get(
+        "contextual_safety",
+        []
+    )
 
-    try:
-        context_result = summarize_context(text)
-    except Exception:
-        # Evidence analysis must never crash the complete engine.
-        return evidence
+    for match in contextual_patterns:
 
-    if not isinstance(context_result, dict):
-        return evidence
+        if not isinstance(match, dict):
+            continue
 
-    if not context_result.get("matched"):
-        return evidence
+        pattern = _normalize(
+            match.get("pattern", "")
+        )
 
-    context_matches = context_result.get("evidence", [])
+        context_type = _normalize(
+            match.get("context_type", "")
+        )
 
-    # --------------------------------------------------------
-    # If contextual_safety.py returns structured evidence,
-    # consume it directly.
-    # --------------------------------------------------------
+        context_intent = _normalize(
+            match.get(
+                "intent",
+                "unknown_or_safe",
+            )
+        )
 
-    if isinstance(context_matches, list):
-        for match in context_matches:
-            if not isinstance(match, dict):
-                continue
+        strength = _clamp(
+            match.get("strength", 0.0)
+        )
 
-            pattern = str(match.get("pattern", "")).strip()
-            context_type = str(
-                match.get("context_type", "")
-            ).strip()
+        explanation = str(
+            match.get("explanation", "")
+        ).strip()
 
-            context_intent = _normalize(
-                match.get("intent", "unknown_or_safe")
+        if not pattern:
+            continue
+
+        # ----------------------------------------------------
+        # Pattern match
+        # ----------------------------------------------------
+
+        matched = pattern in normalized_text
+
+        # ----------------------------------------------------
+        # Structured keyword fallback
+        # ----------------------------------------------------
+
+        if not matched:
+
+            keywords = match.get(
+                "keywords",
+                []
             )
 
-            strength = _clamp(
-                match.get("strength", 0.0)
+            if isinstance(
+                keywords,
+                (list, tuple, set),
+            ):
+
+                normalized_keywords = [
+                    _normalize(keyword)
+                    for keyword in keywords
+                    if _normalize(keyword)
+                ]
+
+                if normalized_keywords:
+                    matched = all(
+                        keyword in normalized_text
+                        for keyword in normalized_keywords
+                    )
+
+        if not matched:
+            continue
+
+        # ----------------------------------------------------
+        # Contextual support
+        #
+        # IMPORTANT:
+        # Do NOT require context_intent to already exist
+        # inside intent_list.
+        #
+        # Example:
+        # "secure account password"
+        #
+        # Intent Engine:
+        #     credential_theft
+        #
+        # Context Engine:
+        #     non-malicious
+        #
+        # Both must reach the Evidence layer.
+        # ----------------------------------------------------
+
+        evidence.append(
+            _make_evidence(
+                intent=context_intent,
+                evidence_type="contextual_support",
+                source="context",
+                signal=pattern,
+                strength=strength,
+                reliability=SOURCE_RELIABILITY["context"],
+                relevance=strength,
+                explanation=(
+                    explanation
+                    or
+                    f"Context '{context_type}' supports "
+                    f"intent '{context_intent}'."
+                ),
+                independent=True,
             )
+        )
 
-            explanation = str(
-                match.get("explanation", "")
-            ).strip()
+        # ----------------------------------------------------
+        # Benign context vs harmful intent
+        #
+        # Context conflict is intentionally weak.
+        # It must NOT erase direct harmful evidence.
+        # ----------------------------------------------------
 
-            if not pattern:
-                continue
+        if context_intent == "non-malicious":
 
-            # ------------------------------------------------
-            # Context supports its declared intent only when
-            # that intent is actually present / compatible.
-            # ------------------------------------------------
+            harmful_intents = [
+                intent
+                for intent in intent_list
+                if intent not in {
+                    "non-malicious",
+                    "unknown_or_safe",
+                    "unknown",
+                }
+            ]
 
-            if context_intent in intent_list:
+            for harmful_intent in harmful_intents:
+
                 evidence.append(
                     _make_evidence(
-                        intent=context_intent,
-                        evidence_type="contextual_support",
+                        intent=harmful_intent,
+                        evidence_type="contextual_conflict",
                         source="context",
                         signal=pattern,
-                        strength=strength,
+                        strength=min(
+                            0.25,
+                            strength,
+                        ),
                         reliability=SOURCE_RELIABILITY["context"],
-                        relevance=strength,
-                        explanation=explanation
-                        or (
-                            f"Context '{context_type}' supports "
-                            f"intent '{context_intent}'."
+                        relevance=0.45,
+                        explanation=(
+                            f"Benign contextual pattern "
+                            f"'{pattern}' conflicts with "
+                            f"detected intent "
+                            f"'{harmful_intent}'."
                         ),
                         independent=True,
                     )
                 )
 
-            # ------------------------------------------------
-            # Benign/non-malicious context conflicts with an
-            # explicit harmful intent.
-            # ------------------------------------------------
-
-            if context_intent == "non-malicious":
-                harmful_intents = [
-                    intent
-                    for intent in intent_list
-                    if intent not in {
-                        "non-malicious",
-                        "unknown_or_safe",
-                        "unknown",
-                    }
-                ]
-
-                for harmful_intent in harmful_intents:
-                    evidence.append(
-                        _make_evidence(
-                            intent=harmful_intent,
-                            evidence_type="contextual_conflict",
-                            source="context",
-                            signal=pattern,
-                            # Context conflict is deliberately
-                            # weaker than direct harmful evidence.
-                            strength=min(0.25, strength),
-                            reliability=SOURCE_RELIABILITY["context"],
-                            relevance=0.45,
-                            explanation=(
-                                f"Benign contextual pattern '{pattern}' "
-                                f"conflicts with detected intent "
-                                f"'{harmful_intent}'."
-                            ),
-                            independent=True,
-                        )
-                    )
-
     return evidence
-
 
 # ============================================================
 # CONTRADICTION ANALYSIS
