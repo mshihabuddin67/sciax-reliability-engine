@@ -686,8 +686,17 @@ def sciax_engine(prompt):
         safe_override=safe_detected
     )
     
+    # --------------------------------------------------
+    # Use evidence-resolved intent for final risk
+    # --------------------------------------------------
+
+    risk_intents = intents
+
+    if resolved_intent == "non-malicious":
+        risk_intents = ["non-malicious"]
+
     risk_result = compute_final_risk(
-        intents=intents,
+        intents=risk_intents,
         signal_strength=signal_strength,
         confidence=confidence,
         stability=stability,
@@ -695,7 +704,7 @@ def sciax_engine(prompt):
     )
 
     risk = risk_result["risk_level"]
-    
+
     return build_response(
         text,
         variants,
@@ -704,6 +713,6 @@ def sciax_engine(prompt):
         risk,
         confidence,
         intent_consistency,
-        language_profile, 
-        evidence_result 
+        language_profile,
+        evidence_result
     )
