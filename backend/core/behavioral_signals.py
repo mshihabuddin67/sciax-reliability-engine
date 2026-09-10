@@ -3,60 +3,6 @@
 # ==================================================
 
 from backend.patterns.registry import PATTERN_REGISTRY
-from backend.patterns.contextual_safety import summarize_context
-
-
-# ==================================================
-# CONTEXT-AWARE HELPERS
-# ==================================================
-
-def _has_explicit_malicious_action(text):
-    malicious_actions = [
-        "steal data",
-        "steal password",
-        "steal credentials",
-        "get password",
-        "breach",
-        "exploit",
-        "bypass security",
-        "use their password",
-        "take their password",
-        "capture password",
-        "send otp",
-        "steal otp",
-        "hack the system",
-        "system hack",
-        "data churi",
-        "password churi",
-    ]
-
-    return any(phrase in text for phrase in malicious_actions)
-
-
-def _has_strong_defensive_context(text):
-    try:
-        context = summarize_context(text)
-    except Exception:
-        return False
-
-    if not isinstance(context, dict):
-        return False
-
-    if not context.get("matched"):
-        return False
-
-    for evidence in context.get("evidence", []):
-        if not isinstance(evidence, dict):
-            continue
-
-        if (
-            evidence.get("context_type") == "defensive_security"
-            and evidence.get("intent") == "non-malicious"
-            and float(evidence.get("strength", 0.0)) >= 0.80
-        ):
-            return True
-
-    return False
 
 
 # ==================================================
@@ -315,21 +261,15 @@ def detect_behavioral_signals(text):
     # CREDENTIAL THEFT
     # --------------------------------------------------
 
-    defensive_context = _has_strong_defensive_context(text)
-    explicit_malicious_action = _has_explicit_malicious_action(text)
-
     if any(p in text for p in [
         "steal password",
         "get password",
         "steal credentials",
         "login credentials",
-        "account password",
+        "account password"
     ]):
-        if not (
-            defensive_context
-            and not explicit_malicious_action
-        ):
-            signals.append("credential theft")
+        
+        signals.append("credential theft")
             
     # --------------------------------------------------
     # HARASSMENT
