@@ -1,32 +1,27 @@
 """
-S-CIAX Evidence Engine V1
+S-CIAX Evidence Engine V2
 
-Purpose
--------
-Convert detected signals, candidate intents, explainability signals,
-and contextual information into structured evidence.
+Purpose:
+    Convert signals, candidate intents, explainability output, and
+    contextual-safety analysis into structured evidence.
 
-This module does NOT make the final risk decision.
-It provides evidence for downstream intent, confidence, and risk fusion.
-
-Architecture:
-
-Signals
-   ↓
-Evidence Extraction
-   ↓
-Evidence Quality
-   ↓
-Intent Support / Contradiction
-   ↓
-Downstream Reasoning
+Design principles:
+    - Evidence does NOT make the final risk decision.
+    - Context is evidence, not an automatic safety override.
+    - Contextual safety is delegated to contextual_safety.py.
+    - Derived evidence sources are explicitly marked.
+    - Existing analyze_evidence() interface remains compatible.
 """
 
-from typing import Any, Dict, List
+from __future__ import annotations
+
+from typing import Any, Dict, Iterable, List
+
+from backend.core.contextual_safety import summarize_context
 
 
 # ============================================================
-# CONFIGURATION
+# INTENT ↔ SIGNAL RELATIONSHIP
 # ============================================================
 
 INTENT_SIGNAL_MAP = {
@@ -38,7 +33,7 @@ INTENT_SIGNAL_MAP = {
     },
 
     "cyber_intrusion": {
-        "cyber intrusion intent": 1.00,
+        "cyber intrusion": 1.00,
     },
 
     "fraud": {
@@ -67,12 +62,20 @@ INTENT_SIGNAL_MAP = {
 }
 
 
-# Evidence source reliability.
-# These are deliberately conservative starting values.
+# ============================================================
+# SOURCE RELIABILITY
+# ============================================================
+
 SOURCE_RELIABILITY = {
     "behavioral_signal": 0.80,
     "intent_engine": 0.75,
+
+    # Explainability is derived from other engine components,
+    # therefore it must not be treated as independent evidence.
     "explainability": 0.70,
+
+    # Contextual safety is useful but should not overpower
+    # direct harmful behavioral evidence.
     "context": 0.65,
 }
 
@@ -81,44 +84,52 @@ SOURCE_RELIABILITY = {
 # HELPERS
 # ============================================================
 
-def _clamp(value: float) -> float:
-    return max(0.0, min(float(value), 1.0))
+def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    return max(low, min(high, float(value)))
 
 
-def _safe_list(value: Any) -> List:
-    if isinstance(value, list):
-        return value
-    return []
+def _safe_list(value: Any) -> List[Any]:
+    if value is None:
+        return []
+
+    if isinstance(value, (list, tuple, set)):
+        return list(value)
+
+    return [value]
 
 
 def _normalize(value: Any) -> str:
-    if not isinstance(value, str):
+    if value is None:
         return ""
-    return value.strip().lower()
 
+    return " ".join(str(value).lower().strip().split())
 
-# ============================================================
-# EVIDENCE OBJECT
-# ============================================================
 
 def _make_evidence(
     *,
     intent: str,
     evidence_type: str,
     source: str,
+    signal: str,
     strength: float,
     reliability: float,
     relevance: float,
-    signal: str | None = None,
-    explanation: str | None = None,
+    explanation: str = "",
+    independent: bool = True,
 ) -> Dict[str, Any]:
+    """
+    Create one normalized evidence item.
+
+    quality intentionally remains compatible with V1:
+        strength * 0.50
+        + reliability * 0.25
+        + relevance * 0.25
+    """
 
     strength = _clamp(strength)
     reliability = _clamp(reliability)
     relevance = _clamp(relevance)
 
-    # Evidence quality is NOT simply signal strength.
-    # Reliability and contextual relevance also matter.
     quality = (
         strength * 0.50
         + reliability * 0.25
@@ -130,91 +141,101 @@ def _make_evidence(
         "evidence_type": evidence_type,
         "source": source,
         "signal": signal,
-        "strength": round(strength, 3),
-        "reliability": round(reliability, 3),
-        "relevance": round(relevance, 3),
-        "quality": round(_clamp(quality), 3),
+        "strength": round(strength, 4),
+        "reliability": round(reliability, 4),
+        "relevance": round(relevance, 4),
+        "quality": round(_clamp(quality), 4),
+        "independent": independent,
         "explanation": explanation,
     }
 
 
 # ============================================================
-# SIGNAL → EVIDENCE
+# BEHAVIORAL SIGNAL EVIDENCE
 # ============================================================
 
 def _extract_signal_evidence(
-    signals: List[str],
-    intents: List[str],
+    signals: Iterable[Any],
+    intents: Iterable[Any],
 ) -> List[Dict[str, Any]]:
+    evidence: List[Dict[str, Any]] = []
 
-    evidence = []
-
-    normalized_signals = {
+    signal_list = [
         _normalize(signal)
-        for signal in signals
-    }
+        for signal in _safe_list(signals)
+        if _normalize(signal)
+    ]
 
-    for intent in intents:
+    intent_list = [
+        _normalize(intent)
+        for intent in _safe_list(intents)
+        if _normalize(intent)
+    ]
 
-        intent_key = _normalize(intent)
+    for intent in intent_list:
+        mapping = INTENT_SIGNAL_MAP.get(intent, {})
 
-        mappings = INTENT_SIGNAL_MAP.get(intent_key, {})
+        for signal, strength in mapping.items():
+            signal_normalized = _normalize(signal)
 
-        for signal, base_strength in mappings.items():
-
-            normalized_signal = _normalize(signal)
-
-            if normalized_signal not in normalized_signals:
-                continue
-
-            evidence.append(
-                _make_evidence(
-                    intent=intent_key,
-                    evidence_type="behavioral",
-                    source="behavioral_signal",
-                    strength=base_strength,
-                    reliability=SOURCE_RELIABILITY["behavioral_signal"],
-                    relevance=1.0,
-                    signal=signal,
-                    explanation=(
-                        f"Behavioral signal '{signal}' "
-                        f"supports intent '{intent_key}'."
-                    ),
+            if signal_normalized in signal_list:
+                evidence.append(
+                    _make_evidence(
+                        intent=intent,
+                        evidence_type="behavioral_signal",
+                        source="behavioral_signal",
+                        signal=signal,
+                        strength=strength,
+                        reliability=SOURCE_RELIABILITY["behavioral_signal"],
+                        relevance=strength,
+                        explanation=(
+                            f"Behavioral signal '{signal}' supports "
+                            f"intent '{intent}'."
+                        ),
+                        independent=True,
+                    )
                 )
-            )
 
     return evidence
 
 
 # ============================================================
-# INTENT ENGINE EVIDENCE
+# CANDIDATE INTENT EVIDENCE
 # ============================================================
 
 def _extract_intent_evidence(
-    intents: List[str],
+    intents: Iterable[Any],
 ) -> List[Dict[str, Any]]:
+    evidence: List[Dict[str, Any]] = []
 
-    evidence = []
+    for intent in _safe_list(intents):
+        intent_normalized = _normalize(intent)
 
-    for intent in intents:
+        if not intent_normalized:
+            continue
 
-        intent_key = _normalize(intent)
-
-        if intent_key == "unknown_or_safe":
+        if intent_normalized in {
+            "unknown_or_safe",
+            "unknown",
+        }:
             continue
 
         evidence.append(
             _make_evidence(
-                intent=intent_key,
+                intent=intent_normalized,
                 evidence_type="candidate_intent",
                 source="intent_engine",
+                signal=intent_normalized,
                 strength=0.70,
                 reliability=SOURCE_RELIABILITY["intent_engine"],
                 relevance=0.90,
                 explanation=(
-                    f"Intent engine generated '{intent_key}' "
-                    "as a candidate interpretation."
+                    f"Intent engine classified candidate intent "
+                    f"'{intent_normalized}'."
                 ),
+                # Candidate intent is derived from the intent engine,
+                # not independent ground truth.
+                independent=False,
             )
         )
 
@@ -226,154 +247,232 @@ def _extract_intent_evidence(
 # ============================================================
 
 def _extract_explainability_evidence(
-    explanations: List[str],
-    intents: List[str],
+    explanations: Iterable[Any],
 ) -> List[Dict[str, Any]]:
+    """
+    Preserve V1 explainability evidence behavior.
 
-    evidence = []
+    IMPORTANT:
+        This source is marked independent=False because explanations
+        are generally derived from the same underlying detection logic.
+    """
 
-    if not explanations:
-        return evidence
+    evidence: List[Dict[str, Any]] = []
 
-    # Explainability should support evidence,
-    # but should NOT dominate behavioral evidence.
-    for explanation in explanations:
+    keyword_map = {
+        "violent_threat": [
+            "violent",
+            "threat",
+            "aggression",
+        ],
+        "cyber_intrusion": [
+            "cyber",
+            "intrusion",
+            "hack",
+            "breach",
+            "exploit",
+        ],
+        "fraud": [
+            "fraud",
+            "otp",
+            "financial",
+        ],
+        "social_engineering": [
+            "social engineering",
+            "impersonation",
+        ],
+        "credential_theft": [
+            "credential",
+            "password",
+            "login",
+        ],
+        "harassment": [
+            "harassment",
+            "abusive",
+        ],
+        "coercion": [
+            "coercion",
+            "force",
+        ],
+        "non-malicious": [
+            "safe",
+            "benign",
+            "non-malicious",
+        ],
+    }
 
-        explanation_text = _normalize(explanation)
+    for explanation in _safe_list(explanations):
+        text = _normalize(explanation)
 
-        if not explanation_text:
+        if not text:
             continue
 
-        matched_intent = None
-
-        if any(
-            term in explanation_text
-            for term in [
-                "violent",
-                "aggression",
-                "threat",
-                "murder",
-                "kill",
-            ]
-        ):
-            if "violent_threat" in intents:
-                matched_intent = "violent_threat"
-
-        elif "cyber" in explanation_text or "system access" in explanation_text:
-            if "cyber_intrusion" in intents:
-                matched_intent = "cyber_intrusion"
-
-        elif "credential" in explanation_text:
-            if "credential_theft" in intents:
-                matched_intent = "credential_theft"
-
-        elif "fraud" in explanation_text:
-            if "fraud" in intents:
-                matched_intent = "fraud"
-
-        elif "social engineering" in explanation_text:
-            if "social_engineering" in intents:
-                matched_intent = "social_engineering"
-
-        elif "harassment" in explanation_text:
-            if "harassment" in intents:
-                matched_intent = "harassment"
-
-        elif "coerc" in explanation_text:
-            if "coercion" in intents:
-                matched_intent = "coercion"
-
-        elif "safe context" in explanation_text:
-            if "non-malicious" in intents:
-                matched_intent = "non-malicious"
-
-        if matched_intent:
-
-            evidence.append(
-                _make_evidence(
-                    intent=matched_intent,
-                    evidence_type="explainability",
-                    source="explainability",
-                    strength=0.65,
-                    reliability=SOURCE_RELIABILITY["explainability"],
-                    relevance=0.85,
-                    explanation=explanation,
-                )
+        for intent, keywords in keyword_map.items():
+            matched_keyword = next(
+                (
+                    keyword
+                    for keyword in keywords
+                    if keyword in text
+                ),
+                None,
             )
+
+            if matched_keyword:
+                evidence.append(
+                    _make_evidence(
+                        intent=intent,
+                        evidence_type="explainability",
+                        source="explainability",
+                        signal=matched_keyword,
+                        strength=0.65,
+                        reliability=SOURCE_RELIABILITY["explainability"],
+                        relevance=0.85,
+                        explanation=str(explanation),
+                        independent=False,
+                    )
+                )
 
     return evidence
 
 
 # ============================================================
-# CONTEXT EVIDENCE
+# CONTEXTUAL SAFETY EVIDENCE
 # ============================================================
 
 def _extract_context_evidence(
     text: str,
-    intents: List[str],
+    intents: Iterable[Any],
 ) -> List[Dict[str, Any]]:
+    """
+    Consume contextual_safety.py as the single source of truth.
 
-    evidence = []
+    Context is NOT a final override.
 
-    text = _normalize(text)
+    Example:
+        "secure account password"
+            -> defensive_security supports non-malicious
 
-    benign_markers = [
-        "sleep schedule",
-        "study hack",
-        "life hack",
-        "productivity hack",
-        "game strategy",
+        "secure account password then steal data"
+            -> defensive_security conflicts with credential/cyber intent
+
+    This layer only records that relationship.
+    """
+
+    evidence: List[Dict[str, Any]] = []
+
+    intent_list = [
+        _normalize(intent)
+        for intent in _safe_list(intents)
+        if _normalize(intent)
     ]
 
-    has_benign_context = any(
-        marker in text
-        for marker in benign_markers
-    )
+    if not text:
+        return evidence
 
-    if has_benign_context:
+    try:
+        context_result = summarize_context(text)
+    except Exception:
+        # Evidence analysis must never crash the complete engine.
+        return evidence
 
-        if "non-malicious" in intents:
+    if not isinstance(context_result, dict):
+        return evidence
 
-            evidence.append(
-                _make_evidence(
-                    intent="non-malicious",
-                    evidence_type="context",
-                    source="context",
-                    strength=0.85,
-                    reliability=SOURCE_RELIABILITY["context"],
-                    relevance=0.90,
-                    explanation="Benign contextual marker detected.",
-                )
+    if not context_result.get("matched"):
+        return evidence
+
+    context_matches = context_result.get("evidence", [])
+
+    # --------------------------------------------------------
+    # If contextual_safety.py returns structured evidence,
+    # consume it directly.
+    # --------------------------------------------------------
+
+    if isinstance(context_matches, list):
+        for match in context_matches:
+            if not isinstance(match, dict):
+                continue
+
+            pattern = str(match.get("pattern", "")).strip()
+            context_type = str(
+                match.get("context_type", "")
+            ).strip()
+
+            context_intent = _normalize(
+                match.get("intent", "unknown_or_safe")
             )
 
-        # If high-risk intent also exists, the benign context
-        # becomes contextual evidence rather than an override.
-        for risky_intent in intents:
+            strength = _clamp(
+                match.get("strength", 0.0)
+            )
 
-            if risky_intent in {
-                "violent_threat",
-                "cyber_intrusion",
-                "fraud",
-                "credential_theft",
-                "social_engineering",
-                "harassment",
-                "coercion",
-            }:
+            explanation = str(
+                match.get("explanation", "")
+            ).strip()
 
+            if not pattern:
+                continue
+
+            # ------------------------------------------------
+            # Context supports its declared intent only when
+            # that intent is actually present / compatible.
+            # ------------------------------------------------
+
+            if context_intent in intent_list:
                 evidence.append(
                     _make_evidence(
-                        intent=risky_intent,
-                        evidence_type="contextual_conflict",
+                        intent=context_intent,
+                        evidence_type="contextual_support",
                         source="context",
-                        strength=0.25,
+                        signal=pattern,
+                        strength=strength,
                         reliability=SOURCE_RELIABILITY["context"],
-                        relevance=0.45,
-                        explanation=(
-                            "Benign context coexists with "
-                            f"high-risk intent '{risky_intent}'."
+                        relevance=strength,
+                        explanation=explanation
+                        or (
+                            f"Context '{context_type}' supports "
+                            f"intent '{context_intent}'."
                         ),
+                        independent=True,
                     )
                 )
+
+            # ------------------------------------------------
+            # Benign/non-malicious context conflicts with an
+            # explicit harmful intent.
+            # ------------------------------------------------
+
+            if context_intent == "non-malicious":
+                harmful_intents = [
+                    intent
+                    for intent in intent_list
+                    if intent not in {
+                        "non-malicious",
+                        "unknown_or_safe",
+                        "unknown",
+                    }
+                ]
+
+                for harmful_intent in harmful_intents:
+                    evidence.append(
+                        _make_evidence(
+                            intent=harmful_intent,
+                            evidence_type="contextual_conflict",
+                            source="context",
+                            signal=pattern,
+                            # Context conflict is deliberately
+                            # weaker than direct harmful evidence.
+                            strength=min(0.25, strength),
+                            reliability=SOURCE_RELIABILITY["context"],
+                            relevance=0.45,
+                            explanation=(
+                                f"Benign contextual pattern '{pattern}' "
+                                f"conflicts with detected intent "
+                                f"'{harmful_intent}'."
+                            ),
+                            independent=True,
+                        )
+                    )
 
     return evidence
 
@@ -383,98 +482,101 @@ def _extract_context_evidence(
 # ============================================================
 
 def compute_contradiction_score(
-    evidence: List[Dict[str, Any]],
+    evidence: Iterable[Dict[str, Any]],
 ) -> float:
+    """
+    Estimate how strongly contextual/semantic evidence conflicts
+    with the currently detected evidence.
 
-    if not evidence:
-        return 0.0
+    Only contextual_conflict items contribute to conflict.
 
-    supportive = [
-        item
-        for item in evidence
-        if item.get("evidence_type")
-        != "contextual_conflict"
-    ]
+    This prevents ordinary supporting evidence from artificially
+    increasing contradiction.
+    """
 
-    conflicting = [
-        item
-        for item in evidence
-        if item.get("evidence_type")
-        == "contextual_conflict"
-    ]
+    supportive_quality = 0.0
+    conflicting_quality = 0.0
 
-    if not supportive:
-        return 0.0
+    for item in _safe_list(evidence):
+        if not isinstance(item, dict):
+            continue
 
-    conflict_strength = sum(
-        item.get("quality", 0.0)
-        for item in conflicting
+        quality = _clamp(
+            item.get("quality", 0.0)
+        )
+
+        if item.get("evidence_type") == "contextual_conflict":
+            conflicting_quality += quality
+        else:
+            supportive_quality += quality
+
+    if supportive_quality <= 0:
+        return round(_clamp(conflicting_quality), 4)
+
+    score = conflicting_quality / (
+        supportive_quality + conflicting_quality
     )
 
-    support_strength = sum(
-        item.get("quality", 0.0)
-        for item in supportive
-    )
-
-    if support_strength <= 0:
-        return 1.0
-
-    return round(
-        _clamp(conflict_strength / support_strength),
-        3,
-    )
+    return round(_clamp(score), 4)
 
 
 # ============================================================
-# INTENT EVIDENCE AGGREGATION
+# EVIDENCE AGGREGATION
 # ============================================================
 
 def aggregate_evidence_by_intent(
-    evidence: List[Dict[str, Any]],
-) -> Dict[str, Dict[str, float]]:
+    evidence: Iterable[Dict[str, Any]],
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Aggregate evidence per intent using diminishing returns.
+
+    Multiple evidence items reinforce confidence without allowing
+    simple signal-count inflation.
+    """
 
     grouped: Dict[str, List[Dict[str, Any]]] = {}
 
-    for item in evidence:
+    for item in _safe_list(evidence):
+        if not isinstance(item, dict):
+            continue
 
-        intent = item.get("intent")
+        intent = _normalize(
+            item.get("intent")
+        )
 
         if not intent:
             continue
 
         grouped.setdefault(intent, []).append(item)
 
-    result = {}
+    result: Dict[str, Dict[str, Any]] = {}
 
     for intent, items in grouped.items():
-
         qualities = [
             _clamp(item.get("quality", 0.0))
             for item in items
         ]
 
-        if not qualities:
-            continue
-
-        # Diminishing-return aggregation.
-        # Prevents 10 duplicate signals from creating
-        # artificially perfect evidence.
         combined = 1.0
 
         for quality in qualities:
             combined *= (1.0 - quality)
 
-        combined = 1.0 - combined
+        evidence_score = 1.0 - combined
+
+        average_quality = (
+            sum(qualities) / len(qualities)
+            if qualities
+            else 0.0
+        )
 
         result[intent] = {
             "evidence_score": round(
-                _clamp(combined),
-                3,
+                _clamp(evidence_score), 4
             ),
             "evidence_count": len(items),
             "average_quality": round(
-                sum(qualities) / len(qualities),
-                3,
+                _clamp(average_quality), 4
             ),
         }
 
@@ -482,65 +584,117 @@ def aggregate_evidence_by_intent(
 
 
 # ============================================================
-# MAIN EVIDENCE ENGINE
+# GLOBAL EVIDENCE QUALITY
+# ============================================================
+
+def _compute_global_evidence_quality(
+    evidence: Iterable[Dict[str, Any]],
+) -> float:
+    """
+    Calculate global evidence quality while reducing the effect
+    of non-independent evidence.
+
+    Independent evidence receives full weight.
+    Derived evidence receives a reduced contribution.
+    """
+
+    weighted_values = []
+
+    for item in _safe_list(evidence):
+        if not isinstance(item, dict):
+            continue
+
+        quality = _clamp(
+            item.get("quality", 0.0)
+        )
+
+        independent = bool(
+            item.get("independent", True)
+        )
+
+        # Derived evidence should not count as a second
+        # independent confirmation of the same decision.
+        multiplier = 1.0 if independent else 0.60
+
+        weighted_values.append(
+            quality * multiplier
+        )
+
+    if not weighted_values:
+        return 0.0
+
+    return round(
+        _clamp(
+            sum(weighted_values)
+            / len(weighted_values)
+        ),
+        4,
+    )
+
+
+# ============================================================
+# MAIN EVIDENCE ANALYSIS
 # ============================================================
 
 def analyze_evidence(
     text: str,
-    signals: List[str] | None = None,
-    intents: List[str] | None = None,
-    explanations: List[str] | None = None,
+    signals: Iterable[Any],
+    intents: Iterable[Any],
+    explanations: Iterable[Any],
 ) -> Dict[str, Any]:
+    """
+    Main public Evidence V2 API.
 
-    if not isinstance(text, str):
-        text = ""
+    Existing callers can continue using:
+        analyze_evidence(
+            text,
+            signals,
+            intents,
+            explanations,
+        )
+    """
 
-    signals = _safe_list(signals)
-    intents = _safe_list(intents)
-    explanations = _safe_list(explanations)
-
-    evidence = []
+    evidence: List[Dict[str, Any]] = []
 
     # --------------------------------------------------------
-    # 1. Behavioral Evidence
+    # 1. Behavioral evidence
     # --------------------------------------------------------
 
     evidence.extend(
         _extract_signal_evidence(
-            signals=signals,
-            intents=intents,
+            signals,
+            intents,
         )
     )
 
     # --------------------------------------------------------
-    # 2. Candidate Intent Evidence
+    # 2. Candidate intent evidence
     # --------------------------------------------------------
 
     evidence.extend(
         _extract_intent_evidence(
-            intents=intents,
+            intents
         )
     )
 
     # --------------------------------------------------------
-    # 3. Explainability Evidence
+    # 3. Explainability evidence
     # --------------------------------------------------------
 
     evidence.extend(
         _extract_explainability_evidence(
-            explanations=explanations,
-            intents=intents,
+            explanations
         )
     )
 
     # --------------------------------------------------------
-    # 4. Context Evidence
+    # 4. Contextual safety evidence
     # --------------------------------------------------------
 
     evidence.extend(
         _extract_context_evidence(
-            text=text,
-            intents=intents,
+            text,
+            intents,
         )
     )
 
@@ -552,51 +706,49 @@ def analyze_evidence(
         evidence
     )
 
-    contradiction_score = compute_contradiction_score(
-        evidence
+    # --------------------------------------------------------
+    # 6. Select strongest evidence-supported intent
+    # --------------------------------------------------------
+
+    selected_intent = "unknown_or_safe"
+    selected_intent_score = 0.0
+
+    for intent, data in intent_evidence.items():
+        score = _clamp(
+            data.get("evidence_score", 0.0)
+        )
+
+        if score > selected_intent_score:
+            selected_intent = intent
+            selected_intent_score = score
+
+    # --------------------------------------------------------
+    # 7. Global evidence quality
+    # --------------------------------------------------------
+
+    global_evidence_quality = (
+        _compute_global_evidence_quality(
+            evidence
+        )
     )
 
     # --------------------------------------------------------
-    # 6. Best Supported Intent
+    # 8. Contradiction
     # --------------------------------------------------------
 
-    selected_intent = None
-    selected_score = 0.0
-
-    for intent, data in intent_evidence.items():
-
-        score = data["evidence_score"]
-
-        if score > selected_score:
-            selected_intent = intent
-            selected_score = score
-
-    # --------------------------------------------------------
-    # 7. Global Evidence Quality
-    # --------------------------------------------------------
-
-    if evidence:
-
-        global_quality = sum(
-            item.get("quality", 0.0)
-            for item in evidence
-        ) / len(evidence)
-
-    else:
-        global_quality = 0.0
+    contradiction_score = compute_contradiction_score(
+        evidence
+    )
 
     return {
         "evidence": evidence,
         "intent_evidence": intent_evidence,
         "selected_intent": selected_intent,
         "selected_intent_score": round(
-            _clamp(selected_score),
-            3,
+            _clamp(selected_intent_score),
+            4,
         ),
-        "global_evidence_quality": round(
-            _clamp(global_quality),
-            3,
-        ),
+        "global_evidence_quality": global_evidence_quality,
         "contradiction_score": contradiction_score,
         "evidence_count": len(evidence),
-  }
+}
