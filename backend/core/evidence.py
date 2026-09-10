@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List
 
-from backend.core.contextual_safety import summarize_context
+from backend.patterns.registry import PATTERN_REGISTRY
 
 
 # ============================================================
@@ -33,7 +33,7 @@ INTENT_SIGNAL_MAP = {
     },
 
     "cyber_intrusion": {
-        "cyber intrusion": 1.00,
+        "cyber intrusion intent": 1.00,
     },
 
     "fraud": {
