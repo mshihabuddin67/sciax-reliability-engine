@@ -625,7 +625,7 @@ def sciax_engine(prompt):
     return build_response(
         text,
         variants,
-        "resolved_intent,
+        resolved_intent,
         stability,
         risk,
         confidence,
