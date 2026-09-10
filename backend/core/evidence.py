@@ -586,17 +586,22 @@ def aggregate_evidence_by_intent(
     grouped: Dict[str, List[Dict[str, Any]]] = {}
 
     for item in _safe_list(evidence):
-        if not isinstance(item, dict):
-            continue
+    if not isinstance(item, dict):
+        continue
 
-        intent = _normalize(
-            item.get("intent")
-        )
+    # Contextual conflict is contradiction evidence,
+    # not positive evidence for the harmful intent.
+    if item.get("evidence_type") == "contextual_conflict":
+        continue
 
-        if not intent:
-            continue
+    intent = _normalize(
+        item.get("intent")
+    )
 
-        grouped.setdefault(intent, []).append(item)
+    if not intent:
+        continue
+
+    grouped.setdefault(intent, []).append(item)
 
     result: Dict[str, Dict[str, Any]] = {}
 
