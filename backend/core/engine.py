@@ -42,6 +42,116 @@ def normalize_simple(text: str) -> str:
 
 
 # ==================================================
+# EVIDENCE-AWARE INTENT ADJUDICATION
+# ==================================================
+
+def resolve_evidence_intent(
+    intents,
+    evidence_result
+):
+    """
+    Resolve candidate intents using Evidence Engine output.
+
+    Design:
+        - Context can correct lexical false positives.
+        - Strong harmful evidence is preserved.
+        - No changes to existing risk/confidence engines.
+        - This is an intent-resolution layer only.
+    """
+
+    if not isinstance(evidence_result, dict):
+        return intents[0] if intents else "unknown_or_safe"
+
+    intent_evidence = evidence_result.get(
+        "intent_evidence",
+        {}
+    )
+
+    if not isinstance(intent_evidence, dict):
+        return intents[0] if intents else "unknown_or_safe"
+
+    if not intent_evidence:
+        return intents[0] if intents else "unknown_or_safe"
+
+    # --------------------------------------------------
+    # Candidate scores
+    # --------------------------------------------------
+
+    scores = {}
+
+    for intent, data in intent_evidence.items():
+
+        if not isinstance(data, dict):
+            continue
+
+        score = data.get(
+            "evidence_score",
+            0.0
+        )
+
+        try:
+            score = float(score)
+        except (TypeError, ValueError):
+            score = 0.0
+
+        scores[intent] = score
+
+    if not scores:
+        return intents[0] if intents else "unknown_or_safe"
+
+    # --------------------------------------------------
+    # Benign contextual evidence
+    # --------------------------------------------------
+
+    benign_score = scores.get(
+        "non-malicious",
+        0.0
+    )
+
+    harmful_intents = {
+        "violent_threat",
+        "cyber_intrusion",
+        "fraud",
+        "social_engineering",
+        "credential_theft",
+        "harassment",
+        "coercion",
+    }
+
+    harmful_scores = {
+        intent: score
+        for intent, score in scores.items()
+        if intent in harmful_intents
+    }
+
+    strongest_harmful_score = max(
+        harmful_scores.values(),
+        default=0.0
+    )
+
+    # --------------------------------------------------
+    # Context correction
+    #
+    # Benign context may correct a lexical candidate
+    # when harmful evidence is weak.
+    #
+    # It must NOT override strong harmful evidence.
+    # --------------------------------------------------
+
+    if benign_score > strongest_harmful_score:
+        return "non-malicious"
+
+    # --------------------------------------------------
+    # Otherwise preserve strongest evidence-supported
+    # intent.
+    # --------------------------------------------------
+
+    return max(
+        scores,
+        key=scores.get
+    )
+
+# ==================================================
 # ANALYSIS BUILDER
 # ==================================================
 
@@ -137,6 +247,15 @@ def sciax_engine(prompt):
 
     evidence_quality = evidence_result["global_evidence_quality"]
     contradiction_score = evidence_result["contradiction_score"]
+
+    # --------------------------------------------------
+    # EVIDENCE-AWARE INTENT ADJUDICATION
+    # --------------------------------------------------
+
+    resolved_intent = resolve_evidence_intent(
+        intents=intents,
+        evidence_result=evidence_result
+    )
     
     # --------------------------------------------------
     # VARIANTS + STABILITY
@@ -506,7 +625,7 @@ def sciax_engine(prompt):
     return build_response(
         text,
         variants,
-        "unknown_or_safe",
+        "resolved_intent,
         stability,
         risk,
         confidence,
