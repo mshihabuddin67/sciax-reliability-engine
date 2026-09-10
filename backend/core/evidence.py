@@ -581,27 +581,30 @@ def aggregate_evidence_by_intent(
 
     Multiple evidence items reinforce confidence without allowing
     simple signal-count inflation.
+
+    Contextual conflict is excluded from positive intent scoring.
+    It remains available to contradiction analysis.
     """
 
     grouped: Dict[str, List[Dict[str, Any]]] = {}
 
     for item in _safe_list(evidence):
-    if not isinstance(item, dict):
-        continue
+        if not isinstance(item, dict):
+            continue
 
-    # Contextual conflict is contradiction evidence,
-    # not positive evidence for the harmful intent.
-    if item.get("evidence_type") == "contextual_conflict":
-        continue
+        # Contextual conflict is contradiction evidence,
+        # not positive evidence for the harmful intent.
+        if item.get("evidence_type") == "contextual_conflict":
+            continue
 
-    intent = _normalize(
-        item.get("intent")
-    )
+        intent = _normalize(
+            item.get("intent")
+        )
 
-    if not intent:
-        continue
+        if not intent:
+            continue
 
-    grouped.setdefault(intent, []).append(item)
+        grouped.setdefault(intent, []).append(item)
 
     result: Dict[str, Dict[str, Any]] = {}
 
@@ -635,7 +638,6 @@ def aggregate_evidence_by_intent(
         }
 
     return result
-
 
 # ============================================================
 # GLOBAL EVIDENCE QUALITY
