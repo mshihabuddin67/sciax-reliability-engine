@@ -53,10 +53,11 @@ def resolve_evidence_intent(
     Resolve candidate intents using Evidence Engine output.
 
     Design:
-        - Context can correct lexical false positives.
-        - Strong harmful evidence is preserved.
-        - No changes to existing risk/confidence engines.
-        - This is an intent-resolution layer only.
+        - Context can correct isolated lexical false positives.
+        - Strong multi-intent harmful evidence is preserved.
+        - Direct threat/cyber evidence is not overridden by
+          a benign contextual prefix.
+        - Existing risk/confidence engines remain unchanged.
     """
 
     if not isinstance(evidence_result, dict):
@@ -65,6 +66,11 @@ def resolve_evidence_intent(
     intent_evidence = evidence_result.get(
         "intent_evidence",
         {}
+    )
+
+    evidence_items = evidence_result.get(
+        "evidence",
+        []
     )
 
     if not isinstance(intent_evidence, dict):
@@ -108,6 +114,10 @@ def resolve_evidence_intent(
         0.0
     )
 
+    # --------------------------------------------------
+    # Harmful candidates
+    # --------------------------------------------------
+
     harmful_intents = {
         "violent_threat",
         "cyber_intrusion",
@@ -124,26 +134,87 @@ def resolve_evidence_intent(
         if intent in harmful_intents
     }
 
+    # --------------------------------------------------
+    # Detect contextual safety support
+    # --------------------------------------------------
+
+    has_strong_benign_context = False
+
+    for item in evidence_items:
+
+        if not isinstance(item, dict):
+            continue
+
+        if item.get("evidence_type") != "contextual_support":
+            continue
+
+        if item.get("intent") != "non-malicious":
+            continue
+
+        try:
+            strength = float(
+                item.get("strength", 0.0)
+            )
+        except (TypeError, ValueError):
+            strength = 0.0
+
+        if strength >= 0.90:
+            has_strong_benign_context = True
+            break
+
+    # --------------------------------------------------
+    # Contextual correction
+    #
+    # An isolated lexical credential/fraud candidate may
+    # be corrected when strong defensive context exists.
+    #
+    # Multiple harmful intents indicate a more complex
+    # malicious interpretation and must be preserved.
+    # --------------------------------------------------
+
+    if has_strong_benign_context:
+
+        harmful_intent_names = set(
+            harmful_scores.keys()
+        )
+
+        isolated_lexical_risk = harmful_intent_names.issubset(
+            {
+                "credential_theft",
+                "fraud",
+            }
+        )
+
+        if isolated_lexical_risk:
+            return "non-malicious"
+
+    # --------------------------------------------------
+    # General benign comparison
+    #
+    # Only allow benign override when harmful evidence
+    # is weak.
+    # --------------------------------------------------
+
     strongest_harmful_score = max(
         harmful_scores.values(),
         default=0.0
     )
 
-    # --------------------------------------------------
-    # Context correction
-    #
-    # Benign context may correct a lexical candidate
-    # when harmful evidence is weak.
-    #
-    # It must NOT override strong harmful evidence.
-    # --------------------------------------------------
-
     if benign_score > strongest_harmful_score:
         return "non-malicious"
 
     # --------------------------------------------------
-    # Otherwise preserve strongest evidence-supported
-    # intent.
+    # Preserve strongest harmful intent
+    # --------------------------------------------------
+
+    if harmful_scores:
+        return max(
+            harmful_scores,
+            key=harmful_scores.get
+        )
+
+    # --------------------------------------------------
+    # Fallback
     # --------------------------------------------------
 
     return max(
@@ -490,6 +561,9 @@ def sciax_engine(prompt):
     for credential in CREDENTIAL_THEFT_STRONG:
         if credential.lower() in text:
 
+            if resolved_intent == "non-malicious":
+                continue
+            
             confidence = compute_final_confidence(
                 stability=stability,
                 signal_strength=signal_strength,
