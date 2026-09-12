@@ -328,11 +328,6 @@ def sciax_engine(prompt):
         evidence_result=evidence_result
     )
 
-    print("DEBUG intents:", intents)
-    print("DEBUG resolved_intent:", resolved_intent)
-    print("DEBUG intent_evidence:", evidence_result.get("intent_evidence", {}))
-    print("DEBUG evidence:", evidence_result.get("evidence", []))
-
     
     # --------------------------------------------------
     # VARIANTS + STABILITY
