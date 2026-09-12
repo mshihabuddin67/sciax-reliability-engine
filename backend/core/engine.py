@@ -691,10 +691,7 @@ def sciax_engine(prompt):
     # Use evidence-resolved intent for final risk
     # --------------------------------------------------
 
-    risk_intents = intents
-
-    if resolved_intent == "non-malicious":
-        risk_intents = ["non-malicious"]
+    risk_intents = [resolved_intent]
 
     risk_result = compute_final_risk(
         intents=risk_intents,
