@@ -37,6 +37,34 @@ def generate_explanations(
 
     }
 
+    # ==================================================
+    # DEFENSIVE SECURITY CONTEXT
+    # ==================================================
+
+    defensive_security_patterns = [
+
+        "secure account password",
+        "secure my password",
+        "protect my account",
+        "protect my password",
+        "password manager",
+        "strong password",
+        "secure login",
+        "account security",
+        "security best practices",
+        "ethical hacking course",
+        "penetration testing"
+    ]
+
+    defensive_security_context = any(
+        pattern in text
+        for pattern in defensive_security_patterns
+    )
+
+    is_non_malicious = (
+        "non-malicious" in intents
+    )
+
     for pattern in safe_patterns:
 
         if pattern in text:
@@ -280,12 +308,39 @@ def generate_explanations(
 
         if pattern in text:
 
-            explanations.append(
-                "credential theft pattern detected"
-            )
+            # --------------------------------------------------
+            # Context-aware adjudication
+            #
+            # A credential-related lexical match does not
+            # automatically mean credential theft.
+            #
+            # If the final intent is non-malicious and the text
+            # contains defensive account-security context,
+            # explain the lexical signal without labeling it
+            # as malicious credential theft.
+            # --------------------------------------------------
+
+            if (
+                is_non_malicious
+                and defensive_security_context
+            ):
+
+                explanations.append(
+                    "credential-related lexical signal detected"
+                )
+
+                explanations.append(
+                    "defensive account-security context detected"
+                )
+
+            else:
+
+                explanations.append(
+                    "credential theft pattern detected"
+                )
 
             break
-
+    
     # ==================================================
     # HARASSMENT
     # ==================================================
