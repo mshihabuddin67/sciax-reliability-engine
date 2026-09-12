@@ -162,14 +162,78 @@ def resolve_evidence_intent(
             has_strong_benign_context = True
             break
 
+    
+
     # --------------------------------------------------
-    # Contextual correction
+    # Evidence-aware benign override
     #
-    # An isolated lexical credential/fraud candidate may
-    # be corrected when strong defensive context exists.
+    # Strong benign context must NOT override strong
+    # independent semantic harmful evidence.
     #
-    # Multiple harmful intents indicate a more complex
-    # malicious interpretation and must be preserved.
+    # Example:
+    #   "study hack: steal his password"
+    #
+    # "study hack" is benign context, but
+    # "steal his password" is independent semantic
+    # evidence of credential theft.
+    # --------------------------------------------------
+
+    semantic_harmful_scores = {}
+
+    for item in evidence_items:
+
+        if not isinstance(item, dict):
+            continue
+
+        if item.get("evidence_type") != "semantic_action":
+            continue
+
+        if not item.get("independent", False):
+            continue
+
+        intent = item.get("intent")
+
+        if intent not in harmful_intents:
+            continue
+
+        try:
+            strength = float(
+                item.get("strength", 0.0)
+            )
+        except (TypeError, ValueError):
+            strength = 0.0
+
+        semantic_harmful_scores[intent] = max(
+            semantic_harmful_scores.get(intent, 0.0),
+            strength
+        )
+
+    # --------------------------------------------------
+    # Strong semantic harmful evidence wins
+    # over benign contextual evidence.
+    # --------------------------------------------------
+
+    if semantic_harmful_scores:
+
+        strongest_semantic_intent = max(
+            semantic_harmful_scores,
+            key=semantic_harmful_scores.get
+        )
+
+        strongest_semantic_score = (
+            semantic_harmful_scores[
+                strongest_semantic_intent
+            ]
+        )
+
+        if strongest_semantic_score >= 0.80:
+            return strongest_semantic_intent
+
+    # --------------------------------------------------
+    # Benign contextual correction
+    #
+    # Apply only when strong independent semantic
+    # harmful evidence does not exist.
     # --------------------------------------------------
 
     if has_strong_benign_context:
@@ -191,8 +255,8 @@ def resolve_evidence_intent(
     # --------------------------------------------------
     # General benign comparison
     #
-    # Only allow benign override when harmful evidence
-    # is weak.
+    # Benign evidence may win only when harmful
+    # evidence is weaker.
     # --------------------------------------------------
 
     strongest_harmful_score = max(
@@ -220,7 +284,7 @@ def resolve_evidence_intent(
     return max(
         scores,
         key=scores.get
-    )
+        )
 
 # ==================================================
 # ANALYSIS BUILDER
