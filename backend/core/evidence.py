@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List
 
 from backend.patterns.registry import PATTERN_REGISTRY
-
+from backend.core.semantic_action import extract_semantic_action
 
 # ============================================================
 # INTENT ↔ SIGNAL RELATIONSHIP
@@ -527,6 +527,165 @@ def _extract_context_evidence(
     return evidence
 
 # ============================================================
+# SEMANTIC ACTION EVIDENCE
+# ============================================================
+
+def _extract_semantic_action_evidence(
+    text: str,
+) -> List[Dict[str, Any]]:
+    """
+    Convert structured semantic-action output into evidence.
+
+    Semantic action is evidence, NOT final risk.
+
+    Currently supported:
+        - credential/data acquisition
+        - unauthorized account/login access
+        - login/security bypass
+
+    Violent semantic actions are intentionally NOT converted
+    into final intent evidence here because polarity/negation
+    handling is not yet mature enough.
+    """
+
+    evidence: List[Dict[str, Any]] = []
+
+    if not isinstance(text, str):
+        return evidence
+
+    semantic = extract_semantic_action(text)
+
+    if not semantic.get("semantic_action_detected"):
+        return evidence
+
+    actions = {
+        item.get("type")
+        for item in semantic.get("actions", [])
+        if isinstance(item, dict)
+    }
+
+    objects = {
+        item.get("type")
+        for item in semantic.get("objects", [])
+        if isinstance(item, dict)
+    }
+
+    ownership = (
+        semantic.get("ownership", {})
+        .get("ownership", "unknown")
+    )
+
+    relevance = semantic.get(
+        "relevance",
+        "low",
+    )
+
+    evidence_type = semantic.get(
+        "evidence_type",
+        "semantic_action",
+    )
+
+    # --------------------------------------------------------
+    # Only third-party ownership is treated as strong
+    # unauthorized-access evidence.
+    # --------------------------------------------------------
+
+    if ownership != "third_party":
+        return evidence
+
+    # --------------------------------------------------------
+    # Credential / sensitive-data acquisition
+    # --------------------------------------------------------
+
+    credential_objects = {
+        "password",
+        "otp",
+        "credentials",
+        "data",
+    }
+
+    credential_actions = {
+        "steal",
+        "obtain",
+    }
+
+    if (
+        actions.intersection(credential_actions)
+        and objects.intersection(credential_objects)
+    ):
+        signal = (
+            f"{next(iter(actions.intersection(credential_actions)))} "
+            f"+ "
+            f"{next(iter(objects.intersection(credential_objects)))}"
+        )
+
+        evidence.append(
+            _make_evidence(
+                intent="credential_theft",
+                evidence_type="semantic_action",
+                source="semantic_action",
+                signal=signal,
+                strength=0.90,
+                reliability=0.85,
+                relevance=0.95,
+                explanation=(
+                    "Semantic action evidence indicates an attempt "
+                    "to obtain or steal sensitive credentials/data "
+                    "belonging to a third party."
+                ),
+                independent=True,
+            )
+        )
+
+        return evidence
+
+    # --------------------------------------------------------
+    # Unauthorized account/login access
+    # --------------------------------------------------------
+
+    access_actions = {
+        "access",
+        "bypass",
+    }
+
+    access_objects = {
+        "account",
+        "login",
+        "server",
+        "system",
+    }
+
+    if (
+        actions.intersection(access_actions)
+        and objects.intersection(access_objects)
+    ):
+        signal = (
+            f"{next(iter(actions.intersection(access_actions)))} "
+            f"+ "
+            f"{next(iter(objects.intersection(access_objects)))}"
+        )
+
+        evidence.append(
+            _make_evidence(
+                intent="cyber_intrusion",
+                evidence_type="semantic_action",
+                source="semantic_action",
+                signal=signal,
+                strength=0.88,
+                reliability=0.85,
+                relevance=0.95,
+                explanation=(
+                    "Semantic action evidence indicates access or "
+                    "bypass behavior directed toward a third-party "
+                    "account, login, server, or system."
+                ),
+                independent=True,
+            )
+        )
+
+    return evidence
+
+# ============================================================
 # CONTRADICTION ANALYSIS
 # ============================================================
 
@@ -755,7 +914,16 @@ def analyze_evidence(
     )
 
     # --------------------------------------------------------
-    # 5. Aggregate
+    # 5. Semantic action evidence
+    # --------------------------------------------------------
+
+    evidence.extend(
+        _extract_semantic_action_evidence(
+            text
+        )
+    )
+    # --------------------------------------------------------
+    # 6. Aggregate
     # --------------------------------------------------------
 
     intent_evidence = aggregate_evidence_by_intent(
@@ -763,7 +931,7 @@ def analyze_evidence(
     )
 
     # --------------------------------------------------------
-    # 6. Select strongest evidence-supported intent
+    # 7. Select strongest evidence-supported intent
     # --------------------------------------------------------
 
     selected_intent = "unknown_or_safe"
@@ -779,7 +947,7 @@ def analyze_evidence(
             selected_intent_score = score
 
     # --------------------------------------------------------
-    # 7. Global evidence quality
+    # 8. Global evidence quality
     # --------------------------------------------------------
 
     global_evidence_quality = (
@@ -789,7 +957,7 @@ def analyze_evidence(
     )
 
     # --------------------------------------------------------
-    # 8. Contradiction
+    # 9. Contradiction
     # --------------------------------------------------------
 
     contradiction_score = compute_contradiction_score(
