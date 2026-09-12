@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from backend.core.normalization import normalize_text
 from backend.core.engine import sciax_engine
 from backend.core.behavioral_signals import detect_behavioral_signals
-from backend.core.intent_engine import classify_intent
 from backend.core.language_profiles import detect_language_profile
 from backend.core.explainability import generate_explanations
 from backend.app.response import build_response
@@ -35,9 +34,12 @@ def analyze(input: InputModel):
     behavioral = detect_behavioral_signals(normalized)
     print("[BEHAVIORAL]", behavioral)
 
-    # 4. Intent classification
-    intent = classify_intent(normalized)
-    print("[INTENT]", intent)
+    # 4. Final intent from evidence-aware engine
+    intent = engine_output.get(
+        "intent_classification",
+        []
+    )
+    print("[FINAL INTENT]", intent)
 
     # 5. Language detection
     language = detect_language_profile(input.text)
