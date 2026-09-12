@@ -141,6 +141,15 @@ CONTEXTUAL_SAFETY_PATTERNS: List[Dict[str, Any]] = [
     },
 
     {
+        "pattern": "secure my account",
+        "context_type": "defensive_security",
+        "intent": "non-malicious",
+        "strength": 0.95,
+        "keywords": ["secure", "my", "account"],
+        "explanation": "Defensive account-protection context.",
+    },
+    
+    {
         "pattern": "protect my account",
         "context_type": "defensive_security",
         "intent": "non-malicious",
