@@ -315,25 +315,35 @@ def build_response(
     confidence,
     intent_consistency,
     language_profile,
-    evidence_result=None
+    evidence_result=None,
+    detected_intents=None
 ):
+
+    if detected_intents is None:
+        detected_intents = [intent]
+
+    detected_intents = list(
+        dict.fromkeys(detected_intents)
+    )
 
     return {
         "prompt": text,
         "language_profile": language_profile,
         "variants": variants,
-        "intent_classification": [intent],
+
+        # Preserve all intents detected by Intent Engine.
+        # "intent" remains the primary/resolved intent internally.
+        "intent_classification": detected_intents,
+
         "analysis": build_analysis(
             stability,
             risk,
-            confidence, 
+            confidence,
             intent_consistency
         ),
 
         "evidence": evidence_result
-        
     }
-
 
 # ==================================================
 # S-CIAX ENGINE (UPGRADED CORE)
@@ -447,7 +457,8 @@ def sciax_engine(prompt):
                 confidence,
                 intent_consistency,
                 language_profile,
-                evidence_result
+                evidence_result,
+                detected_intents=intents
             )
 
     # ==================================================
@@ -491,7 +502,8 @@ def sciax_engine(prompt):
             confidence,
             intent_consistency,
             language_profile,
-            evidence_result
+            evidence_result,
+            detected_intents=intents
         )
 
         response["fuzzy_match"] = {
@@ -538,7 +550,8 @@ def sciax_engine(prompt):
                 confidence,
                 intent_consistency,
                 language_profile,
-                evidence_result 
+                evidence_result,
+                detected_intents=intents
             )
 
     # ==================================================
@@ -578,7 +591,8 @@ def sciax_engine(prompt):
                 confidence,
                 intent_consistency,
                 language_profile, 
-                evidence_result 
+                evidence_result,
+                detected_intents=intents
             )
 
     # ==================================================
@@ -615,7 +629,8 @@ def sciax_engine(prompt):
                 confidence,
                 intent_consistency,
                 language_profile, 
-                evidence_result 
+                evidence_result,
+                detected_intents=intents
             )
 
 
@@ -656,7 +671,8 @@ def sciax_engine(prompt):
                 confidence,
                 intent_consistency, 
                 language_profile, 
-                evidence_result 
+                evidence_result,
+                detected_intents=intents
             )
 
 
@@ -694,7 +710,8 @@ def sciax_engine(prompt):
                 confidence,
                 intent_consistency, 
                 language_profile, 
-                evidence_result 
+                evidence_result,
+                detected_intents=intents
             )
 
 
@@ -732,7 +749,8 @@ def sciax_engine(prompt):
                 confidence,
                 intent_consistency, 
                 language_profile, 
-                evidence_result 
+                evidence_result,
+                detected_intents=intents
             )
 
     # ==================================================
@@ -776,5 +794,6 @@ def sciax_engine(prompt):
         confidence,
         intent_consistency,
         language_profile,
-        evidence_result
+        evidence_result,
+        detected_intents=intents
     )
