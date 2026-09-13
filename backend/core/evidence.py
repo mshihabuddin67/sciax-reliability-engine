@@ -597,17 +597,59 @@ def _extract_semantic_action_evidence(
     # Credential / sensitive-data acquisition
     # --------------------------------------------------------
 
-    credential_objects = {
+        credential_objects = {
         "password",
-        "otp",
         "credentials",
         "data",
+    }
+
+    otp_objects = {
+        "otp",
     }
 
     credential_actions = {
         "steal",
         "obtain",
     }
+
+    # --------------------------------------------------------
+    # OTP acquisition
+    #
+    # OTP theft is classified as fraud in the existing
+    # S-CIAX intent taxonomy.
+    # --------------------------------------------------------
+
+    if (
+        actions.intersection(credential_actions)
+        and objects.intersection(otp_objects)
+    ):
+        signal = (
+            f"{next(iter(actions.intersection(credential_actions)))} "
+            f"+ otp"
+        )
+
+        evidence.append(
+            _make_evidence(
+                intent="fraud",
+                evidence_type="semantic_action",
+                source="semantic_action",
+                signal=signal,
+                strength=0.90,
+                reliability=0.85,
+                relevance=0.95,
+                explanation=(
+                    "Semantic action evidence indicates an attempt "
+                    "to obtain or steal a third-party OTP."
+                ),
+                independent=True,
+            )
+        )
+
+        return evidence
+
+    # --------------------------------------------------------
+    # Credential / sensitive-data acquisition
+    # --------------------------------------------------------
 
     if (
         actions.intersection(credential_actions)
