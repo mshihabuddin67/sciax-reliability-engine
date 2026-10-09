@@ -316,7 +316,8 @@ def build_response(
     intent_consistency,
     language_profile,
     evidence_result=None,
-    detected_intents=None
+    detected_intents=None,
+    adjudicated_intent=None
 ):
 
     if detected_intents is None:
