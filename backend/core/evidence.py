@@ -597,7 +597,7 @@ def _extract_semantic_action_evidence(
     # Credential / sensitive-data acquisition
     # --------------------------------------------------------
 
-        credential_objects = {
+    credential_objects = {
         "password",
         "credentials",
         "data",
