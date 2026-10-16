@@ -1,9 +1,14 @@
+
 import json
+import time
+import statistics
+
 from pathlib import Path
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 
 from backend.core.engine import sciax_engine
+
 
 
 # ============================================================
@@ -136,10 +141,20 @@ def evaluate_record(item, dataset_path, index):
         record["status"] = "ERROR"
         return record
 
+    
     try:
-        output = sciax_engine(text)
+        start_time = time.perf_counter()
+
+        try:
+            output = sciax_engine(text)
+        finally:
+            record["latency_ms"] = round(
+                (time.perf_counter() - start_time) * 1000,
+                3,
+            )
 
         if not isinstance(output, dict):
+
             record["errors"].append("engine_output_not_a_dictionary")
             record["status"] = "ERROR"
             return record
@@ -376,6 +391,26 @@ def evaluate():
     failed = sum(r.get("status") == "FAIL" for r in results)
     errors = sum(r.get("status") == "ERROR" for r in results)
     total = len(results)
+    
+    latencies = [
+        r["latency_ms"]
+        for r in results
+        if isinstance(r.get("latency_ms"), (int, float))
+        and not isinstance(r.get("latency_ms"), bool)
+    ]
+
+    latency_summary = {
+        "measured_records": len(latencies),
+        "mean_ms": round(statistics.mean(latencies), 3)
+        if latencies else None,
+        "median_ms": round(statistics.median(latencies), 3)
+        if latencies else None,
+        "min_ms": round(min(latencies), 3)
+        if latencies else None,
+        "max_ms": round(max(latencies), 3)
+        if latencies else None,
+    }
+
 
     intent_mismatches = [
         r for r in results
@@ -409,6 +444,7 @@ def evaluate():
 
     summary = {
         "benchmark_version": "comprehensive_v1",
+        "latency": latency_summary,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "total_records": total,
         "passed": passed,
