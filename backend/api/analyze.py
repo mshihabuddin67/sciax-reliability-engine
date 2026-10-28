@@ -1,6 +1,11 @@
-from fastapi import APIRouter
+from hmac import compare_digest
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 
+from backend.app.config import API_KEYS
 from backend.core.normalization import normalize_text
 from backend.core.engine import sciax_engine
 from backend.core.behavioral_signals import detect_behavioral_signals
@@ -10,6 +15,31 @@ from backend.app.response import build_response
 
 
 analyze_route = APIRouter()
+api_key_header = APIKeyHeader(
+    name="X-API-Key",
+    auto_error=False,
+)
+
+
+def verify_api_key(
+    api_key: Optional[str] = Depends(api_key_header),
+) -> str:
+    if not API_KEYS:
+        raise HTTPException(
+            status_code=503,
+            detail="API authentication is not configured",
+        )
+
+    if api_key is None or not any(
+        compare_digest(api_key, expected)
+        for expected in API_KEYS
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key",
+        )
+
+    return api_key
 
 
 class InputModel(BaseModel):
@@ -17,8 +47,10 @@ class InputModel(BaseModel):
 
 
 @analyze_route.post("/analyze")
-def analyze(input: InputModel):
-
+def analyze(
+    input: InputModel,
+    _: str = Depends(verify_api_key),
+):
     print("\n========== S-CIAX REQUEST START ==========")
     print("[INPUT]", input.text)
 
