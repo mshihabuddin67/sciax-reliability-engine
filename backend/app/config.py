@@ -6,10 +6,11 @@
 # API KEYS
 # --------------------------------------------------
 
-API_KEYS = [
-    "sciax-demo-key-123"
-]
+import os
 
+_api_key = os.getenv("SCiAX_API_KEY")
+
+API_KEYS = [_api_key.strip()] if _api_key and _api_key.strip() else []
 # --------------------------------------------------
 # DEFAULT SYSTEM VALUES
 # --------------------------------------------------
